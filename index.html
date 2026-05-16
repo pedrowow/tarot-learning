@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The Reader">
+<title>The Reader — Tarot</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-l: #E8D5A3;
+  --gold-d: #7A5C10;
+  --ink: #0F0C08;
+  --parch: #F0EAD8;
+  --parch-d: #D4C9AD;
+  --mist: #6B5F4E;
+  --card-bg: #1A1410;
+  --surface: #221C14;
+  --accent: #7A2D45;
+  --accent-l: #C4697E;
+  --green: #3A7050;
+  --green-l: #8FD4A8;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Raleway',sans-serif;background:var(--ink);color:var(--parch);min-height:100vh;overflow-x:hidden}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* TYPE */
+.serif{font-family:'Cormorant Garamond',serif}
+.disp{font-family:'Cormorant Garamond',serif;font-weight:300}
+.label{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:500}
+
+/* LAYOUT */
+.pad{padding:1.5rem}
+.pad-h{padding:0 1.5rem}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.gap-sm{gap:.5rem}
+.gap-md{gap:1rem}
+.mt-1{margin-top:.5rem}.mt-2{margin-top:1rem}.mt-3{margin-top:1.5rem}.mt-4{margin-top:2rem}
+.mb-1{margin-bottom:.5rem}.mb-2{margin-bottom:1rem}.mb-3{margin-bottom:1.5rem}
+.text-center{text-align:center}
+.text-gold{color:var(--gold)}
+.text-muted{color:rgba(240,234,216,.45)}
+.text-sm{font-size:.85rem}
+.hidden{display:none!important}
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}
+.w-full{width:100%}
+
+/* HEADER */
+.hdr{padding:.9rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(201,168,76,.12);min-height:52px}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:1rem;letter-spacing:.08em;color:var(--gold-l)}
+.back{background:none;border:none;color:var(--gold);font-size:1.1rem;cursor:pointer;padding:.3rem;line-height:1}
+.icon-btn{background:none;border:none;color:var(--gold);font-size:1rem;cursor:pointer;padding:.3rem}
+
+/* DIVIDER */
+.dvd{display:flex;align-items:center;gap:1rem;margin:1.25rem 0}
+.dvd::before,.dvd::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(201,168,76,.35),transparent)}
+.dvd span{color:var(--gold);font-size:.7rem;opacity:.6}
+
+/* BUTTONS */
+.btn{display:block;width:100%;padding:.9rem 1.5rem;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:'Raleway',sans-serif;font-size:.75rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .2s;text-align:center;border-radius:2px}
+.btn:hover{background:var(--gold);color:var(--ink)}
+.btn-ghost{border-color:rgba(201,168,76,.3);color:var(--gold-l)}
+.btn-ghost:hover{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold)}
+.btn-accent{border-color:var(--accent);color:var(--accent-l)}
+.btn-accent:hover{background:var(--accent);color:var(--parch)}
+.btn-sm{padding:.55rem 1rem;font-size:.7rem;width:auto;display:inline-block}
+
+/* QUIZ OPTIONS */
+.qopt{display:block;width:100%;text-align:left;padding:.9rem 1.1rem;background:rgba(255,255,255,.02);border:1px solid rgba(201,168,76,.2);color:var(--parch-d);font-family:'Cormorant Garamond',serif;font-size:1.05rem;line-height:1.4;cursor:pointer;transition:all .2s;border-radius:2px;margin-bottom:.6rem}
+.qopt:hover:not(:disabled){background:rgba(201,168,76,.07);border-color:var(--gold);color:var(--parch)}
+.qopt.correct{background:rgba(58,112,80,.2);border-color:var(--green);color:var(--green-l)}
+.qopt.wrong{background:rgba(122,45,69,.2);border-color:var(--accent);color:var(--accent-l)}
+.qopt.reveal{background:rgba(201,168,76,.07);border-color:var(--gold);color:var(--gold-l)}
+.qopt:disabled{cursor:default}
+
+/* FEEDBACK */
+.feedback{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:3px;padding:1.1rem 1.2rem;margin-top:.75rem;font-family:'Cormorant Garamond',serif;font-size:1rem;line-height:1.65;color:var(--parch-d)}
+.feedback.good{border-color:rgba(58,112,80,.5);background:rgba(58,112,80,.07)}
+.feedback.poor{border-color:rgba(122,45,69,.45)}
+
+/* PROGRESS BAR */
+.pbar{height:2px;background:rgba(201,168,76,.15);border-radius:1px;overflow:hidden}
+.pbar-fill{height:100%;background:var(--gold);transition:width .4s ease}
+
+/* BADGES */
+.badge{display:inline-block;padding:.25rem .7rem;border:1px solid;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;border-radius:2px;margin:.2rem}
+.badge-strong{border-color:var(--green);color:var(--green-l);background:rgba(58,112,80,.15)}
+.badge-weak{border-color:var(--accent);color:var(--accent-l);background:rgba(122,45,69,.15)}
+.badge-neutral{border-color:rgba(201,168,76,.4);color:var(--gold-l);background:rgba(201,168,76,.08)}
+
+/* FLIP CARD */
+.flip-wrap{perspective:1000px;width:100%;max-width:200px;margin:0 auto}
+.flip-inner{position:relative;width:100%;padding-bottom:160%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.flip-inner.flipped{transform:rotateY(180deg)}
+.flip-f,.flip-b{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card-bg);border:1px solid rgba(201,168,76,.35);border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 1rem}
+.flip-b{transform:rotateY(180deg);justify-content:flex-start;padding-top:1.5rem;overflow-y:auto}
+
+/* SPREAD */
+.spread-grid{display:flex;gap:.6rem;justify-content:center;flex-wrap:nowrap;margin:1.25rem 0}
+.spread-slot{flex:1;min-width:0}
+.spread-card{aspect-ratio:2/3.4;background:rgba(201,168,76,.04);border:1px dashed rgba(201,168,76,.25);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;gap:.3rem}
+.spread-card.filled{border-style:solid;border-color:rgba(201,168,76,.4);background:var(--card-bg)}
+.spread-card.active{border-color:var(--gold);box-shadow:0 0 10px rgba(201,168,76,.18)}
+.spread-card .sc-sym{font-size:1.4rem;line-height:1}
+.spread-card .sc-name{font-family:'Cormorant Garamond',serif;font-size:.7rem;text-align:center;padding:0 3px;color:var(--parch);line-height:1.2}
+.spread-card .sc-rev{font-size:.55rem;color:var(--accent-l);letter-spacing:.05em}
+.spread-lbl{text-align:center;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(201,168,76,.65);margin-top:.4rem;line-height:1.3}
+
+/* READING PROMPT */
+.r-bubble{background:rgba(201,168,76,.05);border-left:2px solid var(--gold);padding:1rem 1.2rem;margin-bottom:.9rem;border-radius:0 3px 3px 0;font-family:'Cormorant Garamond',serif;font-size:1.05rem;line-height:1.65;color:var(--parch-d)}
+.branch-opt{display:block;width:100%;text-align:left;padding:.85rem 1rem;background:transparent;border:1px solid rgba(201,168,76,.2);color:var(--parch-d);font-family:'Cormorant Garamond',serif;font-size:1rem;cursor:pointer;transition:all .2s;margin-bottom:.5rem;border-radius:2px;line-height:1.4}
+.branch-opt:hover{border-color:var(--gold);background:rgba(201,168,76,.06);color:var(--parch)}
+.branch-opt.chosen{border-color:var(--gold);background:rgba(201,168,76,.1);color:var(--gold-l)}
+
+/* LIBRARY GRID */
+.lib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;padding:1rem}
+.lib-card{background:var(--card-bg);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.65rem .4rem;text-align:center;cursor:pointer;transition:all .2s}
+.lib-card:hover.unlocked{border-color:var(--gold);transform:translateY(-1px)}
+.lib-card.locked{opacity:.3;cursor:default}
+.lib-card.mastered{border-color:rgba(58,112,80,.5)}
+.lib-card .lc-sym{font-size:1.5rem;margin-bottom:.25rem;line-height:1}
+.lib-card .lc-name{font-family:'Cormorant Garamond',serif;font-size:.72rem;color:var(--parch-d);line-height:1.2}
+.lib-card .lc-st{font-size:.55rem;color:var(--gold);margin-top:.2rem;letter-spacing:.08em;text-transform:uppercase}
+
+/* MODAL SHEET */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.modal-ov.open{display:flex}
+.modal-sh{background:#1A1510;border:1px solid rgba(201,168,76,.25);border-bottom:none;border-radius:12px 12px 0 0;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;padding:1.75rem 1.5rem 2.5rem;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(5rem);background:var(--surface);border:1px solid var(--gold);color:var(--gold-l);padding:.65rem 1.4rem;font-size:.75rem;letter-spacing:.06em;border-radius:2px;z-index:200;transition:transform .3s ease;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* HOME */
+#screen-home{background:radial-gradient(ellipse at 25% 25%,rgba(122,45,69,.14) 0%,transparent 55%),radial-gradient(ellipse at 75% 75%,rgba(201,168,76,.07) 0%,transparent 55%),var(--ink);justify-content:space-between}
+
+/* STARS */
+.star-field{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.star{position:absolute;width:1px;height:1px;background:var(--gold);border-radius:50%;opacity:0;animation:twinkle var(--dur) var(--del) infinite}
+@keyframes twinkle{0%,100%{opacity:0}50%{opacity:var(--op)}}
+
+/* PATH CHOICE */
+.path-card{padding:1.25rem;border:1px solid rgba(201,168,76,.25);border-radius:3px;cursor:pointer;transition:all .2s;position:relative}
+.path-card:hover{border-color:var(--gold);background:rgba(201,168,76,.04)}
+.path-card.selected{border-color:var(--gold);background:rgba(201,168,76,.07)}
+.path-card .pc-tag{position:absolute;top:.6rem;right:.7rem;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.4);padding:.15rem .5rem;border-radius:1px}
+
+
+/* CARD IMAGES */
+.card-img{width:100%;height:100%;object-fit:cover;border-radius:3px;display:block}
+.card-img-wrap{position:relative;width:100%;height:100%}
+.card-img-wrap.reversed{transform:rotate(180deg)}
+.card-img-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:.3rem}
+.flip-img{width:100%;height:55%;object-fit:cover;border-radius:3px 3px 0 0;margin-bottom:.5rem}
+.lib-img{width:100%;aspect-ratio:2/3.4;object-fit:cover;border-radius:2px;margin-bottom:.3rem}
+.diag-img{width:60px;height:100px;object-fit:cover;border-radius:3px}
+
+/* SYNC STATUS */
+.sync-bar{padding:.4rem 1rem;background:var(--surface);border-bottom:1px solid rgba(201,168,76,.12);display:flex;align-items:center;justify-content:space-between;font-size:.65rem;letter-spacing:.08em}
+.sync-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:.4rem}
+.sync-dot.ok{background:var(--green)}
+.sync-dot.warn{background:var(--gold)}
+.sync-dot.err{background:var(--accent)}
+
+/* SETUP SCREEN */
+.setup-input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.3);color:var(--parch);font-family:'Raleway',sans-serif;font-size:.9rem;padding:.8rem 1rem;border-radius:2px;outline:none;margin-bottom:.75rem}
+.setup-input:focus{border-color:var(--gold)}
+.setup-input::placeholder{color:rgba(240,234,216,.3)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(201,168,76,.25);border-radius:2px}
+
+/* CARD ANIM */
+@keyframes cardIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card-in{animation:cardIn .35s ease forwards}
+
+/* PROGRESS DOTS */
+.prog-dots{display:flex;gap:.35rem;align-items:center;justify-content:center;margin:.5rem 0}
+.prog-dot{width:5px;height:5px;border-radius:50%;background:rgba(201,168,76,.18);border:1px solid rgba(201,168,76,.3)}
+.prog-dot.done{background:var(--gold);border-color:var(--gold)}
+.prog-dot.current{background:rgba(201,168,76,.4);border-color:var(--gold)}
+
+/* TAB BAR */
+.tabs{display:flex;border-bottom:1px solid rgba(201,168,76,.18);padding:0 .75rem}
+.tab{flex:1;background:none;border:none;color:rgba(240,234,216,.35);font-family:'Raleway',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;padding:.7rem 0;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* ORNAMENT */
+.orn{text-align:center;color:var(--gold);opacity:.35;font-size:.85rem;letter-spacing:.5em;margin:.75rem 0}
+</style>
+</head>
+<body>
+
+<div class="star-field" id="starField"></div>
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════
+  SCREEN: HOME
+════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem 2rem;text-align:center;position:relative;z-index:1">
+    <div style="font-size:2.8rem;margin-bottom:1.5rem;opacity:.85">✦</div>
+    <p class="label mb-2">Rider–Waite Tarot</p>
+    <h1 class="disp" style="font-size:clamp(2.6rem,9vw,3.4rem);line-height:1.05;color:var(--gold-l);">The<br>Reader</h1>
+    <div class="dvd mt-3 mb-2"><span>·</span></div>
+    <p class="serif text-muted mt-1" style="font-size:1.05rem;max-width:260px;line-height:1.7">From first card to full reading — a structured practice path.</p>
+  </div>
+  <div style="padding:1.5rem;padding-bottom:2.5rem;display:flex;flex-direction:column;gap:.7rem;position:relative;z-index:1">
+    <button class="btn" onclick="startDiagnostic()">Begin — Take the Assessment</button>
+    <button class="btn btn-ghost" onclick="showScreen('screen-dashboard')" id="btn-continue" style="display:none">Continue Practice</button>
+    <button class="btn btn-ghost" onclick="showScreen('screen-library')">Card Library</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+  SCREEN: PATH CHOICE
+════════════════════════════ -->
+<div id="screen-path" class="screen">
+  <div class="hdr">
+    <button class="back" onclick="showScreen('screen-home')">←</button>
+    <span class="hdr-title">Your Path</span>
+    <span></span>
+  </div>
+  <div class="scroll pad">
+    <p class="label mb-2">Before we begin</p>
+    <h2 class="disp" style="font-size:1.8rem;color:var(--gold-l)">Choose how you'll read</h2>
+    <p class="serif text-muted mt-2 mb-3" style="font-size:1rem;line-height:1.65">This shapes what appears in your spreads and practice. You can change it later.</p>
+    <div id="path-upright" class="path-card mb-2" onclick="selectPath('upright')">
+      <span class="pc-tag">Recommended</span>
+      <p class="label mb-1">Upright only</p>
+      <h3 class="disp" style="font-size:1.2rem;color:var(--parch)">The Foundation Path</h3>
+      <p class="serif text-muted mt-1" style="font-size:.95rem;line-height:1.6">Learn each card's core meaning before introducing the added complexity of reversals. The right starting point for most readers.</p>
+    </div>
+    <div id="path-reversed" class="path-card" onclick="selectPath('reversed')">
+      <p class="label mb-1">Upright + Reversed</p>
+      <h3 class="disp" style="font-size:1.2rem;color:var(--parch)">The Advanced Path</h3>
+      <p class="serif text-muted mt-1" style="font-size:.95rem;line-height:1.6">Cards appear in both orientations. Reversals add nuance — blocked energy, internalised themes, resistance. Challenging but richer.</p>
+    </div>
+    <button class="btn mt-4" id="btn-path-confirm" style="display:none" onclick="confirmPath()">Continue</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+  SCREEN: DIAGNOSTIC
+════════════════════════════ -->
+<div id="screen-diagnostic" class="screen">
+  <div class="hdr">
+    <button class="back" onclick="showScreen('screen-path')">←</button>
+    <span class="hdr-title">Assessment</span>
+    <span id="diag-counter" class="text-muted text-sm"></span>
+  </div>
+  <div class="scroll pad" id="diag-content"></div>
+</div>
+
+<!-- ════════════════════════════
+  SCREEN: DIAGNOSTIC RESULT
+════════════════════════════ -->
+<div id="screen-diag-result" class="screen">
+  <div class="hdr">
+    <span></span>
+    <span class="hdr-title">Your Profile</span>
+    <span></span>
+  </div>
+  <div class="scroll pad" id="diag-result-content"></div>
+</div>
+
+<!-- ════════════════════════════
+  SCREEN: DASHBOARD
+════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+  <div id="sync-status-bar" class="sync-bar hidden"><span><span class="sync-dot warn" id="sync-dot"></span><span id="sync-text">Not synced</span></span><button class="btn btn-sm btn-ghost" style="padding:.3rem .7rem;font-size:.6rem" onclick="manualSync()">Sync now</button></div>
+  <div class="hdr">
+    <button class="back" onclick="showScreen('screen-home')">←</button>
+    <span class="hdr-title">Practice</span>
+    <button class="icon-btn" onclick="showScreen('screen-library')">☰</button>
+  </div>
+  <div class="scroll" id="dashboard-content"></div>
+</div>
+
+<!-- ════════════════════════════
+  SCREEN: SPREAD PRACTICE
+════════════════════════════ -->
+<div id="screen-spread" class="screen">
+  <div class="hdr">
+    <button class="back" onclick="showScreen('screen-dashboard')">←</button>
+    <span class="hdr-title" id="spread-title">Three Card Spread</span>
+    <span></span>
+  </div>
+  <div class="scroll pad" id="spread-content"></div>
+</div>
+
+<!-- ════════════════════════════
+  SCREEN: QUIZ
+════════════════════════════ -->
+<div id="screen-quiz" class="screen">
+  <div class="hdr">
+    <button class="back" onclick="showScreen('screen-dashboard')">←</button>
+    <span class="hdr-title">Card Quiz</span>
+    <span id="quiz-counter" class="text-muted text-sm"></span>
+  </div>
+  <div class="scroll pad" id="quiz-content"></div>
+</div>
+
+<!-- ════════════════════════════
+  SCREEN: READING SIMULATOR
+════════════════════════════ -->
+<div id="screen-reading" class="screen">
+  <div class="hdr">
+    <button class="back" onclick="showScreen('screen-dashboard')">←</button>
+    <span class="hdr-title">Reading Simulator</span>
+    <span></span>
+  </div>
+  <div class="scroll pad" id="reading-content"></div>
+</div>
+
+<!-- ════════════════════════════
+  SCREEN: CARD LIBRARY
+════════════════════════════ -->
+<div id="screen-library" class="screen">
+  <div class="hdr">
+    <button class="back" onclick="goBackFromLibrary()">←</button>
+    <span class="hdr-title">Card Library</span>
+    <span></span>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="filterLibrary('major',this)">Major Arcana</button>
+    <button class="tab" onclick="filterLibrary('minor-cups',this)">Cups</button>
+    <button class="tab" onclick="filterLibrary('minor-wands',this)">Wands</button>
+    <button class="tab" onclick="filterLibrary('minor-swords',this)">Swords</button>
+    <button class="tab" onclick="filterLibrary('minor-pents',this)">Pentacles</button>
+  </div>
+  <div class="scroll lib-grid" id="library-grid"></div>
+</div>
+
+<!-- ════════════════════════════
+  SCREEN: FLASHCARD
+════════════════════════════ -->
+<div id="screen-flashcard" class="screen">
+  <div class="hdr">
+    <button class="back" id="flashcard-back-btn">←</button>
+    <span class="hdr-title" id="flashcard-title">The Fool</span>
+    <span></span>
+  </div>
+  <div class="scroll pad" id="flashcard-content"></div>
+</div>
+
+<!-- ════════════════════════════
+  CARD DETAIL MODAL
+════════════════════════════ -->
+<div class="modal-ov" id="card-modal">
+  <div class="modal-sh" id="card-modal-content"></div>
+</div>
+
+
+<!-- ════════════════════════════
+  SCREEN: GITHUB SETUP
+════════════════════════════ -->
+<div id="screen-setup" class="screen">
+  <div class="hdr">
+    <span></span>
+    <span class="hdr-title">Sync Setup</span>
+    <span></span>
+  </div>
+  <div class="scroll pad">
+    <p class="label mb-2">Cross-device progress sync</p>
+    <h2 class="disp mb-3" style="font-size:1.7rem;color:var(--gold-l)">Connect GitHub</h2>
+    <p class="serif mb-3" style="font-size:1rem;line-height:1.7;color:var(--parch-d)">Your progress will be saved to a file in your GitHub repo. It syncs automatically whenever you complete something, so your phone and laptop stay in step.</p>
+    <div class="feedback mb-3">
+      <p class="label mb-1">How to get a token</p>
+      <p class="serif" style="font-size:.9rem;line-height:1.65;color:var(--parch-d)">GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token. Tick the <strong>repo</strong> scope only. Copy it — you only see it once.</p>
+    </div>
+    <input class="setup-input" id="gh-token-input" type="password" placeholder="ghp_your_token_here" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <p class="text-muted text-sm mb-3" style="font-size:.7rem">Stored only in this browser's localStorage. Never transmitted except to api.github.com.</p>
+    <button class="btn mb-2" onclick="saveGithubToken()">Save Token & Sync</button>
+    <button class="btn btn-ghost" onclick="skipGithubSetup()">Skip — use local only</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════
+
+const GITHUB = {
+  owner: 'pedrowow',
+  repo: 'tarot-learning',
+  branch: 'main',
+  progressFile: 'progress.json',
+  get api() { return `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.progressFile}`; }
+};
+
+const CARD_IMAGES = {
+  'fool':'cards/m00.jpg','magician':'cards/m01.jpg','high-priestess':'cards/m02.jpg',
+  'empress':'cards/m03.jpg','emperor':'cards/m04.jpg','hierophant':'cards/m05.jpg',
+  'lovers':'cards/m06.jpg','chariot':'cards/m07.jpg','strength':'cards/m08.jpg',
+  'hermit':'cards/m09.jpg','wheel':'cards/m10.jpg','justice':'cards/m11.jpg',
+  'hanged-man':'cards/m12.jpg','death':'cards/m13.jpg','temperance':'cards/m14.jpg',
+  'devil':'cards/m15.jpg','tower':'cards/m16.jpg','star':'cards/m17.jpg',
+  'moon':'cards/m18.jpg','sun':'cards/m19.jpg','judgement':'cards/m20.jpg',
+  'world':'cards/m21.jpg','ace-cups':'cards/c01.jpg','two-cups':'cards/c02.jpg',
+  'ten-cups':'cards/c10.jpg'
+};
+
+function cardImgHtml(card, reversed=false, wrapStyle='', imgStyle='height:100%;width:100%;object-fit:cover;border-radius:3px;display:block') {
+  const src = CARD_IMAGES[card.id];
+  if (!src) return `<div style="font-size:2rem;line-height:1">${card.symbol}</div>`;
+  const rot = reversed ? 'transform:rotate(180deg);' : '';
+  return `<div style="${rot}${wrapStyle}width:100%;height:100%">
+    <img src="${src}" alt="${card.name}" style="${imgStyle}"
+      onerror="this.parentElement.innerHTML='<div style=\'font-size:2rem\'>${card.symbol}</div>'"
+      loading="lazy">
+  </div>`;
+}
+
+// ══════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════
+
+const MAJOR_ARCANA = [
+  {id:'fool',num:'0',name:'The Fool',suit:'major',symbol:'🌬',keywords:['beginnings','spontaneity','innocence','leap of faith'],upright:'A new chapter is opening. The Fool carries no baggage — literally. He steps off the cliff not from ignorance but from trust. In a reading, this card asks whether you are willing to begin without knowing how it ends. It speaks to pure potential, unformed energy, the courage of not yet knowing.',reversed:'The leap is being blocked — by fear, by overthinking, or by a reckless jump taken too soon. Reversed, The Fool asks: what are you refusing to begin, or what have you begun without any thought at all?',relational:'Next to The World: a full cycle ending and beginning. Next to The Tower: the leap may cost more than expected. Next to The High Priestess: trust your instincts before you act.',scenario:{love:'Beginning something new — a relationship, a feeling, a risk taken in vulnerability.',work:'A career pivot, a new venture, or a moment when jumping in is the only way forward.',self:'The invitation to stop rehearsing and start living.'}},
+  {id:'magician',num:'I',name:'The Magician',suit:'major',symbol:'🪄',keywords:['will','skill','manifestation','resourcefulness'],upright:'All four suits appear on The Magician\'s table — cups, wands, swords, pentacles. He has everything he needs. One hand points up, one down: as above, so below. This is the card of directed will — of taking what you have and making something real from it. It asks: what are you capable of that you haven\'t yet attempted?',reversed:'Skill used deceptively, or potential squandered. Reversed, The Magician often points to manipulation — someone using their abilities to mislead — or to the querent holding themselves back from their own power.',relational:'Next to The High Priestess: knowledge and intuition working together, or in tension. Next to The Devil: skill turned to manipulation. Next to The Star: vision finally becoming action.',scenario:{love:'Someone showing their true capability — or concealing it. The early stage where impressions are everything.',work:'A project where your full skill set is needed. Trust that you have what it takes.',self:'The reminder that capability without application is just potential.'}},
+  {id:'high-priestess',num:'II',name:'The High Priestess',suit:'major',symbol:'🌙',keywords:['intuition','mystery','the unseen','inner knowing'],upright:'She sits between two pillars — B and J, Boaz and Jachin, the pillars of Solomon\'s temple. Duality. She does not speak; she knows. The High Priestess is what cannot be said outright, the knowledge that lives below words. In a reading she asks you to stop analysing and start listening — to dreams, to instinct, to what you already know but won\'t admit.',reversed:'Intuition suppressed or ignored. You may know the answer and be refusing it. Reversed, The High Priestess can also point to secrets being withheld by others, or to superficiality replacing depth.',relational:'Next to The Magician: knowing and doing in balance, or in competition. Next to The Moon: the unconscious is speaking loudly. Next to The Emperor: tension between intuition and rigid structure.',scenario:{love:'Something unspoken between two people. What is not being said matters more than what is.',work:'Trust the instinct that keeps surfacing. The data may not show what you already sense.',self:'The invitation to go inward before seeking answers outside.'}},
+  {id:'empress',num:'III',name:'The Empress',suit:'major',symbol:'🌿',keywords:['abundance','nurturing','creation','nature'],upright:'The Empress is surrounded by nature in full abundance — wheat, water, a forest. She is pregnant with possibility. This is the card of creative fertility, of things coming to fruition, of the body, the earth, and the sensory world. She asks: where in your life is something ready to grow? She also speaks to the need for nurturing — of projects, relationships, or yourself.',reversed:'Creative block, lack of nurturing, overdependence on others or on being needed. A mother who smothers. Fertility withheld. Reversed, The Empress asks where growth is being prevented, and why.',relational:'Next to The Emperor: complementary energies, or power imbalance in a relationship. Next to The Star: healing through reconnecting with the body and earth. Next to The Hanged Man: abundance put on hold.',scenario:{love:'Deep sensual connection, or the desire for it. Possibly pregnancy or the urge to create a home.',work:'A creative project reaching maturity. Nurture it rather than forcing it.',self:'Take care of the body. Rest, pleasure, and time in nature are not luxuries right now.'}},
+  {id:'emperor',num:'IV',name:'The Emperor',suit:'major',symbol:'👑',keywords:['authority','structure','stability','control'],upright:'The Emperor sits on a stone throne. Behind him, mountains. He represents order, systems, fatherly authority — the world made stable through structure and law. In a reading he often points to the need for discipline, boundaries, or a clear plan. He can represent a powerful figure in the querent\'s life — an employer, a father, an institution — or the querent\'s own capacity to take charge.',reversed:'Control turning to rigidity or tyranny. Authoritarianism, inflexibility, a refusal to bend. Reversed, The Emperor can also signal an abdication of responsibility — someone who should be leading but isn\'t.',relational:'Next to The Empress: partnership of creation and structure, potentially smothering. Next to The Tower: authority structures collapsing. Next to Justice: the law, in any sense.',scenario:{love:'Power dynamics in a relationship. Who holds the authority, and is it working?',work:'The need to take charge — or to work within a rigidly structured environment.',self:'Where are you being too rigid with yourself? Or not disciplined enough?'}},
+  {id:'hierophant',num:'V',name:'The Hierophant',suit:'major',symbol:'⛪',keywords:['tradition','institutions','belief','convention'],upright:'The Hierophant is the bridge between the divine and the human — a priest, a teacher, an institution. He holds keys to sacred knowledge, but that knowledge comes with doctrine. In a reading he often points to inherited belief systems: religion, culture, professional convention. The question is whether you are following tradition because it serves you, or because you have not yet questioned it.',reversed:'Breaking from tradition, or tradition that has become oppressive. Reversed, The Hierophant invites radical questioning of received wisdom — or warns that the querent is rejecting structure they actually need.',relational:'Next to The High Priestess: external doctrine versus inner knowing. Next to The Fool: the tension between convention and the new. Next to The Devil: belief used to control.',scenario:{love:'A conventional relationship path — marriage, commitment ceremonies. Or the weight of family expectation on a partnership.',work:'Institutional settings, professional bodies, mentors with strict methodologies.',self:'Which of your beliefs actually belong to you?'}},
+  {id:'lovers',num:'VI',name:'The Lovers',suit:'major',symbol:'💞',keywords:['choice','alignment','relationship','values'],upright:'Despite the name, this card is fundamentally about choice — a significant one, where values must be clarified before a path is taken. The angel above the couple asks them to look at what they truly believe. In relationship readings it speaks to genuine union and deep alignment. But wherever it falls, the question is: does this choice reflect who you actually are?',reversed:'Misalignment, a choice made from the wrong place, or avoidance of a necessary decision. Relationships out of harmony with personal values.',relational:'Next to The Devil: desire versus values, addiction to a relationship dynamic. Next to The Tower: a choice that will break something. Next to The Two of Cups: deep mutual connection.',scenario:{love:'A significant relationship decision. Not whether to stay or go — that may be the surface. What do you actually value?',work:'A choice between two paths that cannot both be taken. Check alignment before deciding.',self:'What does love — of any kind — demand from you right now?'}},
+  {id:'chariot',num:'VII',name:'The Chariot',suit:'major',symbol:'🏛',keywords:['willpower','victory','direction','control'],upright:'Two sphinxes pull the chariot in opposite directions — one black, one white. The Charioteer holds no reins. He controls them through pure will and focused intention. This is the card of hard-won forward movement, of harnessing opposing forces and driving them toward a goal. Ambition, determination, and the refusal to be pulled apart.',reversed:'Loss of direction, scattered energy, a vehicle with no driver. Reversed, The Chariot can also signal aggression used as a substitute for clarity.',relational:'Next to Strength: willpower meeting patience — powerful. Next to The Moon: direction lost in confusion. Next to The Wheel: momentum working with or against you.',scenario:{love:'A relationship moving forward despite obstacles — or a person who is hard to keep up with.',work:'Drive and ambition in full force. The ability to push through opposition.',self:'What opposing forces in yourself are you trying to reconcile, and are you doing it with force or with mastery?'}},
+  {id:'strength',num:'VIII',name:'The Chariot',suit:'major',symbol:'♾',keywords:['courage','patience','inner strength','compassion'],upright:'A woman closes the jaws of a lion — not with force but with gentleness. The infinity symbol floats above her. Strength is not about domination; it is about the courage to face what frightens us and transform it through love rather than will. This card speaks to the power of patience, of sustained inner work, of meeting the wild parts of yourself without flinching.',reversed:'Self-doubt, lack of confidence, or strength being expressed as brutality rather than grace. An inner battle being lost to fear.',relational:'Next to The Chariot: the difference between force and real power. Next to The Devil: confronting an addiction or compulsion with compassion. Next to The Moon: facing the unconscious.',scenario:{love:'A relationship requiring patience and inner reserves rather than action. Or the courage to show vulnerability.',work:'Sustained effort over time, not a dramatic gesture. You may not see results immediately.',self:'What in you needs to be faced rather than suppressed?'}},
+  {id:'hermit',num:'IX',name:'The Hermit',suit:'major',symbol:'🪔',keywords:['solitude','guidance','introspection','wisdom'],upright:'The Hermit stands on a mountain peak, lantern raised, illuminating only the next few steps. He has withdrawn from the world not in defeat but in search of something that only solitude can deliver. In a reading he calls for a period of genuine reflection — stepping back from noise, from others\' opinions, to find your own counsel. The light is yours; it can only illuminate your own path.',reversed:'Isolation becoming avoidance. Withdrawal that has curdled into disconnection. Or the refusal to spend any time alone — running from the self.',relational:'Next to The Star: solitude leading toward hope and recovery. Next to The World: the inner journey nearing completion. Next to The Six of Swords: moving away is the right choice right now.',scenario:{love:'A period of needing space — not rejection, but necessary distance for clarity.',work:'A time for deep focus and single-minded work, away from committees and noise.',self:'What does your own inner voice say when you stop listening to everyone else?'}},
+  {id:'wheel',num:'X',name:'The Wheel of Fortune',suit:'major',symbol:'☸',keywords:['cycles','change','fate','turning point'],upright:'Everything turns. The Wheel is one of the few cards where the central figure is not a person — it is a mechanism, indifferent to who is on it. What goes up comes down; what is down will rise again. In a reading it often marks a turning point — a moment when circumstances shift in ways that feel fated. The question is not how to stop the wheel but how to meet its turn.',reversed:'A cycle blocked or resisted. Bad luck that seems to repeat. A refusal to accept that something has run its course.',relational:'Next to The Fool: new beginning emerging from a turn. Next to The Tower: an abrupt or violent change of fortune. Next to The Hanged Man: change suspended.',scenario:{love:'A pivotal moment in a relationship — things are shifting, whether you choose it or not.',work:'Market forces, organisational change, or simply timing working in or against your favour.',self:'What cycle are you in, and are you resisting its natural completion?'}},
+  {id:'justice',num:'XI',name:'The Chariot',suit:'major',symbol:'⚖',keywords:['fairness','truth','cause and effect','accountability'],upright:'Justice holds a sword and scales — clarity and balance. This is not poetic justice but the logical consequence of actions taken. In a reading it often points to legal matters, contracts, or situations where fairness and accountability are at stake. More broadly, it asks you to look honestly at your own conduct: what cause have you set in motion, and what effect are you prepared to meet?',reversed:'Dishonesty, unfair treatment, avoiding accountability. Or a situation where justice is genuinely absent — and you know it.',relational:'Next to The Emperor: institutional justice, law. Next to The Moon: deception clouding a fair outcome. Next to The Eight of Swords: self-imposed restriction from a fear of judgement.',scenario:{love:'A relationship requiring honesty about what is and isn\'t fair to each person.',work:'Contracts, negotiations, performance reviews, or the consequences of past decisions arriving.',self:'Where are you not being fully honest with yourself or others?'}},
+  {id:'hanged-man',num:'XII',name:'The Hanged Man',suit:'major',symbol:'🙃',keywords:['suspension','surrender','new perspective','waiting'],upright:'He hangs by one foot, at peace. He chose this. The Hanged Man is voluntarily suspended — not trapped but paused, deliberately, to see the world from a different angle. In readings he calls for surrender rather than struggle, for the kind of waiting that is actually doing something profound. What you cannot see from your current position becomes visible when you let go and invert.',reversed:'Needless martyrdom, or suspension becoming stagnation. Refusing to make a necessary sacrifice. Waiting that has become avoidance.',relational:'Next to The Wheel: a pause before the next turn. Next to The Star: stillness that will lead to healing. Next to The Eight of Swords: paralysis dressed up as patience.',scenario:{love:'A relationship put on hold — or the moment of surrendering the need to control the outcome.',work:'A project requires waiting. Push harder and you lose. Let it breathe.',self:'What are you refusing to release your grip on?'}},
+  {id:'death',num:'XIII',name:'The Death',suit:'major',symbol:'🌑',keywords:['transformation','endings','transition','change'],upright:'Death rarely means death. In nearly every context it signals an ending that makes a beginning possible — the kind of change that is so complete there is no going back. Something has run its course. The grief is real, but so is what comes after. In a reading, Death asks what you are clinging to that has already ended, and what would become possible if you let it go.',reversed:'Resistance to necessary change, clinging to what is already over. Or stagnation so complete that even ending has stalled.',relational:'Next to The Fool: profound transformation leading to a new beginning. Next to The Tower: sudden, devastating change. Next to The Ten of Cups: the end of a chapter but not of love.',scenario:{love:'A relationship that has fundamentally changed, or needs to end for both people to grow.',work:'The end of a role, a business phase, or an identity tied to work.',self:'What in your sense of self needs to be allowed to die so something real can replace it?'}},
+  {id:'temperance',num:'XIV',name:'Temperance',suit:'major',symbol:'🌊',keywords:['balance','patience','moderation','integration'],upright:'An angel pours water between two cups, perfectly. One foot on land, one in the water. Temperance is the art of the middle path — not as compromise but as mastery. In readings it speaks to the integration of opposing elements, to the kind of patience that is actually creation, to the alchemy of combining what doesn\'t obviously fit. What are you trying to force that would work better if you let it flow?',reversed:'Imbalance, excess, impatience that is undoing careful work. Extremes where moderation would serve better.',relational:'Next to The Devil: excess meeting its antidote. Next to The Lovers: values and action aligned at last. Next to The Hermit: inner integration through solitude.',scenario:{love:'A relationship finding its rhythm after conflict, or the need to temper strong feelings.',work:'The long game — sustained, careful work rather than dramatic interventions.',self:'Which part of you is being neglected in favour of another?'}},
+  {id:'devil',num:'XV',name:'The Devil',suit:'major',symbol:'⛓',keywords:['bondage','materialism','shadow','addiction'],upright:'Two figures are chained to the Devil\'s plinth — but the chains are loose. They could leave. The Devil represents the things that hold us that we believe we cannot escape: addiction, obsessive desire, a story we keep telling about ourselves, a comfort we are too afraid to give up. In a reading this card is honest about what is enslaving you — and quietly notes that the chains are removable.',reversed:'Breaking free from a binding pattern, or shadow material beginning to be integrated. Less commonly: a refusal to acknowledge what actually has you.',relational:'Next to The Lovers: desire overriding values. Next to Strength: meeting the shadow with compassion. Next to The Tower: forced liberation from what bound you.',scenario:{love:'A relationship that has become an addiction — compulsive, not nourishing.',work:'A role or organisation that diminishes you but feels impossible to leave.',self:'What story about yourself are you still imprisoned by?'}},
+  {id:'tower',num:'XVI',name:'The Tower',suit:'major',symbol:'⚡',keywords:['sudden change','upheaval','revelation','collapse'],upright:'Lightning strikes the tower. People fall. What was built on false foundations cannot stand. The Tower is the card everyone fears in a reading — and it is one of the most honest. It represents the sudden collapse of what was never as solid as it appeared: a belief, a relationship, a career built on someone else\'s values. The destruction is real. So is what becomes possible in the rubble.',reversed:'A near-miss with collapse, or the disaster avoided — but perhaps at the cost of necessary change. The upheaval is internal rather than external.',relational:'Next to The Fool: the cliff has a different consequence than expected. Next to Death: a double ending, profound transformation. Next to The Star: hope immediately following devastation.',scenario:{love:'A sudden revelation that changes everything — or the collapse of an arrangement that should have ended long ago.',work:'Redundancy, a company failing, or the abrupt end of a project.',self:'What in your worldview is being shaken, and what does that reveal about its foundations?'}},
+  {id:'star',num:'XVII',name:'The Star',suit:'major',symbol:'⭐',keywords:['hope','renewal','inspiration','serenity'],upright:'The Star follows The Tower. A naked woman pours water into a river and onto the earth under a clear sky full of stars — one large, eight smaller. She is unguarded, unhurried. After devastation, there is this. The Star is the card of genuine hope — not wishful thinking but a restored belief in possibility, in healing, in the world being fundamentally kind. In a reading it signals recovery, inspiration, and a quiet confidence returning.',reversed:'Despair, loss of hope, or hope that has become escapism — wishful thinking that avoids the work of healing.',relational:'Next to The Tower: the moment after collapse. Next to The Hermit: solitary renewal. Next to The Moon: hope obscured by illusion or fear.',scenario:{love:'Recovery after heartbreak. Or meeting someone who genuinely restores your faith.',work:'Inspiration returning after a difficult period. Creative renewal.',self:'What would you do if you believed things could actually be good?'}},
+  {id:'moon',num:'XVIII',name:'The Moon',suit:'major',symbol:'🌕',keywords:['illusion','the unconscious','fear','confusion'],upright:'The Moon illuminates nothing clearly. A dog and a wolf howl at it; a crayfish emerges from the deep. The path between the towers is uncertain. The Moon speaks to the unconscious mind in full flood — to dreams, fears, projections, the stories we tell ourselves in the dark. In a reading it often marks a time of confusion, where things are not what they seem and the imagination is generating more noise than the reality.',reversed:'The fog beginning to lift. Confusion resolving. Or unconscious material being actively suppressed instead of integrated.',relational:'Next to The High Priestess: profound depth of the unconscious. Next to The Star: moving from confusion toward clarity. Next to The Devil: fear feeding an addictive pattern.',scenario:{love:'Projections onto a partner, or a relationship shrouded in uncertainty and unspoken things.',work:'A situation where nothing is clear — motives, intentions, outcomes. Proceed carefully.',self:'Which of your fears are real and which are stories running in the dark?'}},
+  {id:'sun',num:'XIX',name:'The Sun',suit:'major',symbol:'☀',keywords:['joy','vitality','success','clarity'],upright:'A child rides a white horse under a radiant sun, arms wide, flowers in hand. Everything is lit. The Sun is the card of genuine joy, of things going well without irony, of vitality and clarity and deserved success. It also speaks to the child-self — the part of you that knows how to play, be present, and celebrate. In a reading it is almost always a welcome sight.',reversed:'Temporary setback to joy, or happiness that feels blocked or unreachable. Sometimes overconfidence or naivety.',relational:'Next to The Star: a sustained period of hope and renewal. Next to The Tower: joy that will cost something. Next to The Six of Wands: public recognition.',scenario:{love:'A genuinely happy relationship, or the arrival of joy in a difficult one.',work:'Success, recognition, a project flourishing.',self:'Where in your life are you not allowing yourself to be simply happy?'}},
+  {id:'judgement',num:'XX',name:'Judgement',suit:'major',symbol:'📯',keywords:['reckoning','awakening','calling','absolution'],upright:'Figures rise from coffins at the sound of an angel\'s trumpet. They are not being judged from the outside — they are called to account from the inside. Judgement speaks to a moment of profound reckoning and awakening: hearing a calling clearly for the first time, forgiving yourself for what has passed, rising to meet what you are actually meant to do. It is the card of the second chance that is also a final exam.',reversed:'Refusing the call, self-doubt preventing a rise, harsh self-judgement without absolution. Or projecting judgement onto others to avoid your own.',relational:'Next to The World: the reckoning leading to completion. Next to The Fool: the awakening leading to a new beginning. Next to The Tower: forced reckoning.',scenario:{love:'Forgiving yourself or another for what happened in the past. A relationship given a second chance — with full clarity.',work:'Hearing a true professional calling and finally answering it.',self:'What are you refusing to forgive yourself for, and what would be possible if you did?'}},
+  {id:'world',num:'XXI',name:'The World',suit:'major',symbol:'🌍',keywords:['completion','integration','achievement','wholeness'],upright:'A dancing figure at the centre of a wreath. The four fixed signs of the zodiac watch from the corners. The World is the card of genuine completion — not the ending that contains grief, but the ending that contains everything, including the next beginning. In a reading it marks the successful conclusion of a significant cycle: a project, a phase of life, a journey of self-understanding. You have arrived. You are already preparing to leave again.',reversed:'A cycle not quite complete, loose ends preventing closure, or the sense that the finish line keeps moving.',relational:'Next to The Fool: the circle is complete and beginning again. Next to Judgement: awakening and arrival together. Next to The Ten of Pentacles: material and spiritual fulfilment.',scenario:{love:'A relationship that has grown into something genuinely whole and sustaining.',work:'The completion of a long project. Mastery achieved.',self:'What in your life is actually, genuinely complete — and are you letting yourself feel that?'}}
+];
+
+const MINOR_ARCANA_SAMPLE = [
+  {id:'ace-cups',num:'Ace',name:'Ace of Cups',suit:'cups',symbol:'🏆',keywords:['new love','emotional beginning','intuition','overflow'],upright:'A hand emerges from a cloud bearing a cup overflowing with water — five streams, a dove descending, a lotus floating. The Ace of Cups is the seed of emotional experience: new love, compassion, creative inspiration, spiritual connection. Whatever emotional beginning is possible, it is here. The question is whether you are open to receiving it.',reversed:'Emotional repression, a blocked heart, or the beginning that cannot be received.',relational:'Next to The Lovers: deep romantic potential. Next to The Two of Cups: a connection becoming real.',scenario:{love:'A new relationship, or the renewal of feeling in an existing one.',work:'Creative work that comes from genuine passion rather than obligation.',self:'What would it mean to let yourself feel this fully?'}},
+  {id:'two-cups',num:'Two',name:'Two of Cups',suit:'cups',symbol:'🫂',keywords:['union','partnership','mutual attraction','connection'],upright:'Two figures exchange cups before a caduceus topped with a lion\'s head. This is the card of genuine mutual recognition — romantic or otherwise. Not just attraction but resonance: two people who see each other clearly. In any context it speaks to a partnership built on real connection and equal exchange.',reversed:'Imbalance in a relationship, or a connection that seems mutual but isn\'t.',relational:'Next to The Lovers: a deep romantic bond. Next to The Tower: a partnership under serious pressure.',scenario:{love:'A new relationship with genuine potential, or a reconnection with real substance.',work:'A collaboration or business partnership that actually works.',self:'With whom do you have this kind of mutual recognition, and are you giving it enough attention?'}},
+  {id:'ten-cups',num:'Ten',name:'Ten of Cups',suit:'cups',symbol:'🌈',keywords:['family harmony','emotional fulfilment','joy','belonging'],upright:'A couple embrace as children play beneath a rainbow of cups. The Ten of Cups is the emotional promised land — deep contentment, a sense of home and belonging, relationships that sustain rather than drain. It is not complacency but genuine fulfilment. In a reading it often signals that something emotionally significant is reaching its most positive conclusion.',reversed:'An unhappy family dynamic, surface harmony concealing discord, or the image of happiness replacing the experience of it.',relational:'Next to Death: the end of a chapter, but love remains. Next to The World: complete emotional fulfilment.',scenario:{love:'Deep happiness in a relationship or family unit.',work:'A team or working environment that feels genuinely supportive.',self:'Where in your life do you have this, and where are you still searching for it?'}}
+];
+
+const ALL_CARDS = [...MAJOR_ARCANA, ...MINOR_ARCANA_SAMPLE];
+
+// ── DIAGNOSTIC QUESTIONS ──
+const DIAG_QUESTIONS = [
+  {
+    id:'dq1',
+    type:'isolation',
+    card:'hierophant',
+    prompt:'The Hierophant appears in a reading. What is it most useful to explore with the querent?',
+    options:[
+      {text:'Church attendance, religious practice, or formal ceremonies.',score:1,tag:'surface'},
+      {text:'The structures of belief they have inherited versus those they have actually chosen.',score:3,tag:'depth'},
+      {text:'A teacher or mentor figure who is important to them right now.',score:2,tag:'partial'},
+      {text:'Whether they are following rules out of genuine conviction or habit and fear.',score:3,tag:'depth'}
+    ],
+    feedback:{
+      good:'The Hierophant is frequently misread as being about religion specifically. Its deeper question is always about inherited belief — what we\'ve been told to think versus what we actually know.',
+      poor:'That\'s a surface reading. The Hierophant goes further than the obvious symbols to ask why we follow the structures we follow. Tradition and convention can be chosen consciously or lived unconsciously — that\'s the real territory.'
+    }
+  },
+  {
+    id:'dq2',
+    type:'pairing',
+    card:'lovers',
+    paired_card:'devil',
+    prompt:'The Lovers appears next to The Devil in a spread. What does this pairing most usefully open up?',
+    options:[
+      {text:'A relationship that has gone badly wrong.',score:1,tag:'surface'},
+      {text:'The tension between what the querent values and what they desire — and whether those things are aligned.',score:3,tag:'depth'},
+      {text:'An affair or infidelity.',score:1,tag:'surface'},
+      {text:'An addictive or compulsive relationship dynamic where desire is overriding everything else.',score:2,tag:'partial'}
+    ],
+    feedback:{
+      good:'Exactly. This pairing is about the gap between what you choose with your values and what you are drawn to compulsively. The Lovers asks about alignment; The Devil shows what disrupts it. That tension is where the useful conversation lives.',
+      poor:'Think beyond the surface imagery. The Lovers is fundamentally about values and choice. The Devil is about what has a hold on us. Together they ask: are you choosing this, or are you hooked?'
+    }
+  },
+  {
+    id:'dq3',
+    type:'position',
+    card:'high-priestess',
+    prompt:'The High Priestess falls in the "obstacle" position of a Celtic Cross spread. What does the position do to the meaning?',
+    options:[
+      {text:'It means the querent\'s intuition is unusually strong right now.',score:1,tag:'surface'},
+      {text:'The card\'s meaning reverses — the High Priestess becomes a negative force.',score:0,tag:'wrong'},
+      {text:'The querent\'s own intuition or inner knowing is what\'s getting in the way — possibly by being ignored, or by creating paralysis.',score:3,tag:'depth'},
+      {text:'Someone with deep knowledge is blocking the querent\'s progress.',score:2,tag:'partial'}
+    ],
+    feedback:{
+      good:'Precise. Position doesn\'t reverse a meaning — it frames it. The High Priestess as obstacle asks: how is the querent\'s relationship to their own inner knowing actually blocking them? Too much? Too little? Refused entirely?',
+      poor:'Position in a spread is not a reversal switch — it\'s a lens. The High Priestess as obstacle asks what role intuition or inner knowledge is playing in blocking progress. That\'s a different and more useful question than "what does this card normally mean?"'
+    }
+  },
+  {
+    id:'dq4',
+    type:'pairing',
+    card:'tower',
+    paired_card:'star',
+    prompt:'The Tower and The Star appear together in a reading. How do you use this combination?',
+    options:[
+      {text:'They cancel each other out — destruction and hope balance to neutral.',score:0,tag:'wrong'},
+      {text:'Something is collapsing but the querent will be okay — focus on the recovery, not just the fall.',score:2,tag:'partial'},
+      {text:'The sequence matters: The Tower is what must happen before The Star becomes possible. The destruction is real, and so is what follows it.',score:3,tag:'depth'},
+      {text:'The Star softens The Tower — this won\'t be as bad as feared.',score:1,tag:'surface'}
+    ],
+    feedback:{
+      good:'Good. These cards have a narrative relationship in the Major Arcana. The Tower destroys false foundations; The Star is what becomes available once the rubble clears. One doesn\'t cancel the other. The reading acknowledges both.',
+      poor:'Cards don\'t cancel each other in a spread — they create a narrative. The Tower and The Star follow each other in the Major Arcana for a reason. The fall is real. So is what becomes possible after it. A reader who only names one of those is only giving half the picture.'
+    }
+  },
+  {
+    id:'dq5',
+    type:'isolation',
+    card:'death',
+    prompt:'Death appears in a querent\'s reading about their career. What is the most useful opening?',
+    options:[
+      {text:'Reassure them immediately that Death almost never means literal death.',score:1,tag:'surface'},
+      {text:'Something in their current career is ending or needs to end — ask what has already run its course.',score:3,tag:'depth'},
+      {text:'A dramatic change is coming that they cannot prevent.',score:2,tag:'partial'},
+      {text:'Explore what they are most afraid of losing, since fear is driving the question.',score:2,tag:'partial'}
+    ],
+    feedback:{
+      good:'Exactly. The productive question is not "is something ending?" — it clearly is. The productive question is: what, specifically? What has already run its course that the querent is still trying to sustain? That\'s where the real conversation begins.',
+      poor:'Death in a career reading is an invitation to get specific about endings. Something has run its course. The useful work is identifying what — because the querent usually knows. Reassurance or fatalism both miss the point.'
+    }
+  },
+  {
+    id:'dq6',
+    type:'pairing',
+    card:'high-priestess',
+    paired_card:'magician',
+    prompt:'The High Priestess and The Magician appear side by side. What is the most useful frame for this pairing?',
+    options:[
+      {text:'A male and female energy in balance — a good sign for relationships.',score:1,tag:'surface'},
+      {text:'Inner knowing and directed action: two forces that can work together or be in tension. Ask which is missing.',score:3,tag:'depth'},
+      {text:'The querent has strong skills and strong instincts.',score:2,tag:'partial'},
+      {text:'Someone with knowledge is about to act on it.',score:1,tag:'surface'}
+    ],
+    feedback:{
+      good:'Well framed. The Magician acts; the High Priestess knows. Together they ask: is the querent directing their will based on genuine inner knowledge, or are those two things out of sync? One without the other is incomplete.',
+      poor:'Don\'t reduce these cards to gender archetypes. The Magician and the High Priestess represent two modes of knowing and being: the directed, active, outer — and the receptive, still, inner. Their relationship in a spread is always about which of those is present, absent, or in tension.'
+    }
+  }
+];
+
+// ── SPREADS ──
+const SPREADS = {
+  three_card: {
+    id:'three_card',
+    name:'Three Card',
+    description:'Past, Present, Future — the spine of any reading.',
+    positions:['Past','Present','Future']
+  },
+  situation_challenge: {
+    id:'situation_challenge',
+    name:'Situation & Path',
+    description:'Where you are, what opposes you, what helps.',
+    positions:['Situation','Challenge','Guidance']
+  },
+  mind_body_spirit: {
+    id:'mind_body_spirit',
+    name:'Mind · Body · Spirit',
+    description:'A snapshot across three dimensions of being.',
+    positions:['Mind','Body','Spirit']
+  }
+};
+
+// ── READING SIMULATOR SCENARIOS ──
+const READING_SCENARIOS = [
+  {
+    id:'rs1',
+    spread:'three_card',
+    querrant:'A client has recently been made redundant after 12 years at the same company. They feel lost.',
+    cards:[
+      {card_id:'hierophant',position:'Past',reversed:false},
+      {card_id:'death',position:'Present',reversed:false},
+      {card_id:'star',position:'Future',reversed:false}
+    ],
+    steps:[
+      {
+        prompt:'You look at the spread. The Hierophant sits in the Past position. Before addressing the redundancy directly, what does this card tell you about how they experienced that 12-year period?',
+        options:[
+          {text:'They valued the structure and identity that the institution gave them — perhaps too much.',chosen_response:'Yes. The Hierophant in the past position often signals that the querent found significant meaning in belonging to a structure. 12 years at one company, especially if that company had strong culture or hierarchy, can become an identity. The first thing worth acknowledging is that what was lost wasn\'t just a job.',correct:true},
+          {text:'They were probably too conventional in how they worked — never challenged the rules.',chosen_response:'That\'s a possible reading, but it\'s evaluative rather than curious. The Hierophant in past position more usefully asks: what did that structure mean to them? Judgement about whether they should have challenged it comes later, if at all.',correct:false},
+          {text:'Religious or cultural values shaped their career choices.',chosen_response:'Possible, but you\'re narrowing too fast. The Hierophant\'s institutional dimension is broader than religion. The more useful question at this stage is: how much of their identity was tied to belonging to that particular institution?',correct:false}
+        ]
+      },
+      {
+        prompt:'Death sits in the Present. How do you introduce this card to someone who is already frightened?',
+        options:[
+          {text:'Immediately reassure them that Death never means actual death, then explain the transformation meaning.',chosen_response:'The reassurance impulse is understandable, but leading with it actually increases anxiety — it signals there\'s something to be scared of. A better approach: name what is true. Something has ended. That is real, and it matters. Then open toward what becomes possible when something ends.',correct:false},
+          {text:'Acknowledge that something genuinely has ended, and that grief is the right response — then ask what they are still trying to hold onto.',chosen_response:'Exactly. Death in the present isn\'t a threat — it\'s a description. Something has ended. The grief is real and worth honouring. But the productive question for a reading is: what are they still trying to sustain that has already gone? That\'s where the actual work lives.',correct:true},
+          {text:'Focus on transformation — this is a new beginning in disguise.',chosen_response:'You\'re jumping to the hopeful frame too quickly. Transformation is part of the card\'s meaning, but if you go straight there you skip the acknowledgement of loss that the querent actually needs to hear first. The sequence matters.',correct:false}
+        ]
+      },
+      {
+        prompt:'The Star closes the spread in the Future position. After what you\'ve said about the Hierophant and Death, how do you read this?',
+        options:[
+          {text:'Everything will be fine — the Star is a positive card and the future looks good.',chosen_response:'Too easy. The Star is genuinely hopeful but it isn\'t a promise of outcome — it\'s a quality of possibility. Given that the Past shows deep institutional identity and the Present shows real loss, the Star in the future position is asking: can you let yourself hope for something that is genuinely yours, rather than something given to you by an institution?',correct:false},
+          {text:'Recovery and renewal are available — but the sequence suggests it requires genuinely releasing what\'s gone, not just waiting it out.',chosen_response:'Good. The narrative arc across these three cards is: deep institutional belonging → real ending → the possibility of something more authentically one\'s own. The Star is available, but it follows Death. You can\'t rush the middle card.',correct:true},
+          {text:'They should look for work in a field that feels more meaningful and personally chosen.',chosen_response:'That might be true but you\'ve shifted from reading the cards to giving career advice. The Star speaks to the inner state that makes what comes next possible — renewed hope, trust in the world, a less defended openness. Stay with that.',correct:false}
+        ]
+      }
+    ]
+  }
+];
+
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let STATE = {
+  path: null,
+  diagAnswers: [],
+  diagScore: 0,
+  profile: null,
+  unlockedCards: [],
+  masteredCards: [],
+  quizHistory: [],
+  spreadHistory: [],
+  libraryPrevScreen: 'screen-dashboard',
+  flashcardPrevScreen: 'screen-dashboard',
+  currentDiagQ: 0,
+  currentQuizQ: 0,
+  currentQuizCards: [],
+  currentSpread: null,
+  currentReading: null,
+  readingStep: 0
+};
+
+// ══════════════════════════════════════
+//  GITHUB SYNC
+// ══════════════════════════════════════
+
+function getToken() { return localStorage.getItem('gh_token'); }
+function setToken(t) { localStorage.setItem('gh_token', t); }
+
+let syncTimeout = null;
+let lastSyncedSha = null;
+
+function setSyncStatus(status, msg) {
+  const bar = document.getElementById('sync-status-bar');
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  if (!bar) return;
+  bar.classList.remove('hidden');
+  dot.className = 'sync-dot ' + status;
+  txt.textContent = msg;
+}
+
+async function syncToGitHub() {
+  const token = getToken();
+  if (!token) { setSyncStatus('warn','Local only — no token'); return; }
+  setSyncStatus('warn','Syncing...');
+  try {
+    const payload = JSON.stringify(STATE);
+    const encoded = btoa(unescape(encodeURIComponent(payload)));
+    const body = { message:'progress sync', content: encoded, branch: GITHUB.branch };
+    if (lastSyncedSha) body.sha = lastSyncedSha;
+
+    const res = await fetch(GITHUB.api, {
+      method: 'PUT',
+      headers: { Authorization: `token ${token}`, 'Content-Type':'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      if (res.status === 409 || (err.message && err.message.includes('sha'))) {
+        await fetchFromGitHub();
+        return;
+      }
+      throw new Error(err.message || res.status);
+    }
+    const data = await res.json();
+    lastSyncedSha = data.content?.sha;
+    setSyncStatus('ok','Synced ' + new Date().toLocaleTimeString());
+  } catch(e) {
+    setSyncStatus('err','Sync failed — saved locally');
+    console.warn('GitHub sync error:', e);
+  }
+}
+
+async function fetchFromGitHub() {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const res = await fetch(GITHUB.api + '?ref=' + GITHUB.branch, {
+      headers: { Authorization: `token ${token}` }
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    lastSyncedSha = data.sha;
+    const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
+    const remote = JSON.parse(decoded);
+    // Merge: take whichever has more progress per field
+    STATE = mergeState(STATE, remote);
+    saveLocalState();
+    setSyncStatus('ok','Synced from GitHub');
+    return true;
+  } catch(e) {
+    console.warn('GitHub fetch error:', e);
+    return false;
+  }
+}
+
+function mergeState(local, remote) {
+  // For arrays like masteredCards, unlockedCards — union both
+  const mergeArr = (a, b) => [...new Set([...(a||[]), ...(b||[])])];
+  return {
+    ...local,
+    ...remote,
+    masteredCards: mergeArr(local.masteredCards, remote.masteredCards),
+    unlockedCards: mergeArr(local.unlockedCards, remote.unlockedCards),
+    quizHistory: (local.quizHistory||[]).length > (remote.quizHistory||[]).length
+      ? local.quizHistory : remote.quizHistory,
+    spreadHistory: (local.spreadHistory||[]).length > (remote.spreadHistory||[]).length
+      ? local.spreadHistory : remote.spreadHistory,
+    // Prefer whichever has a profile already
+    profile: local.profile || remote.profile,
+    path: local.path || remote.path,
+  };
+}
+
+function debouncedSync() {
+  saveLocalState();
+  if (!getToken()) return;
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(syncToGitHub, 2000);
+}
+
+async function manualSync() {
+  await fetchFromGitHub();
+  renderDashboard();
+  setSyncStatus('ok','Synced ' + new Date().toLocaleTimeString());
+}
+
+function saveGithubToken() {
+  const input = document.getElementById('gh-token-input');
+  const token = input.value.trim();
+  if (!token || !token.startsWith('ghp_')) {
+    showToast('Token should start with ghp_');
+    return;
+  }
+  setToken(token);
+  showToast('Token saved — syncing now...');
+  fetchFromGitHub().then(() => {
+    renderDashboard();
+    showScreen('screen-dashboard');
+  });
+}
+
+function skipGithubSetup() {
+  showScreen('screen-dashboard');
+}
+
+// ══════════════════════════════════════
+//  STATE PERSISTENCE
+// ══════════════════════════════════════
+
+function saveLocalState() { try { localStorage.setItem('tarot_state', JSON.stringify(STATE)); } catch(e){} }
+function saveState() { debouncedSync(); }
+function loadState() {
+  try {
+    const s = localStorage.getItem('tarot_state');
+    if (s) { STATE = {...STATE, ...JSON.parse(s)}; }
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+//  SCREEN NAVIGATION
+// ══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('active'); el.scrollTop = 0; }
+}
+
+function goBackFromLibrary() {
+  showScreen(STATE.libraryPrevScreen || 'screen-home');
+}
+
+// ══════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ══════════════════════════════════════
+//  STARS
+// ══════════════════════════════════════
+function buildStars() {
+  const sf = document.getElementById('starField');
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${3+Math.random()*5}s;--del:${Math.random()*6}s;--op:${0.2+Math.random()*0.4}`;
+    sf.appendChild(s);
+  }
+}
+
+// ══════════════════════════════════════
+//  HOME
+// ══════════════════════════════════════
+function initHome() {
+  const hasSave = STATE.path !== null;
+  document.getElementById('btn-continue').style.display = hasSave ? 'block' : 'none';
+}
+
+function startDiagnostic() {
+  showScreen('screen-path');
+}
+
+// ══════════════════════════════════════
+//  PATH SELECTION
+// ══════════════════════════════════════
+function selectPath(p) {
+  STATE.path = p;
+  document.getElementById('path-upright').classList.toggle('selected', p === 'upright');
+  document.getElementById('path-reversed').classList.toggle('selected', p === 'reversed');
+  document.getElementById('btn-path-confirm').style.display = 'block';
+}
+
+function confirmPath() {
+  STATE.currentDiagQ = 0;
+  STATE.diagAnswers = [];
+  STATE.diagScore = 0;
+  saveState();
+  renderDiagnosticQ();
+  showScreen('screen-diagnostic');
+}
+
+// ══════════════════════════════════════
+//  DIAGNOSTIC
+// ══════════════════════════════════════
+function renderDiagnosticQ() {
+  const q = DIAG_QUESTIONS[STATE.currentDiagQ];
+  const total = DIAG_QUESTIONS.length;
+  document.getElementById('diag-counter').textContent = `${STATE.currentDiagQ + 1} / ${total}`;
+
+  const card = ALL_CARDS.find(c => c.id === q.card);
+  const paired = q.paired_card ? ALL_CARDS.find(c => c.id === q.paired_card) : null;
+
+  const typeLabel = {isolation:'Card in Isolation', pairing:'Card Pairing', position:'Card Position'}[q.type];
+
+  let cardDisplay = `
+    <div style="display:flex;gap:1rem;justify-content:center;margin-bottom:1.25rem;align-items:flex-end">
+      <div style="text-align:center">
+        <div style="width:70px;height:115px;margin:0 auto .4rem">${cardImgHtml(card,false,'','width:100%;height:100%;object-fit:cover;border-radius:3px')}</div>
+        <div class="label" style="font-size:.6rem">${card.name}</div>
+      </div>
+      ${paired ? `<div style="text-align:center;align-self:center;color:var(--gold);opacity:.5;font-size:1rem;margin-bottom:1.5rem">+</div>
+      <div style="text-align:center">
+        <div style="width:70px;height:115px;margin:0 auto .4rem">${cardImgHtml(paired,false,'','width:100%;height:100%;object-fit:cover;border-radius:3px')}</div>
+        <div class="label" style="font-size:.6rem">${paired.name}</div>
+      </div>` : ''}
+    </div>`;
+
+  const optionsHtml = q.options.map((opt, i) =>
+    `<button class="qopt" onclick="answerDiag(${i})">${opt.text}</button>`
+  ).join('');
+
+  const pbarWidth = Math.round((STATE.currentDiagQ / total) * 100);
+
+  document.getElementById('diag-content').innerHTML = `
+    <div class="pbar mb-3"><div class="pbar-fill" style="width:${pbarWidth}%"></div></div>
+    <p class="label mb-2">${typeLabel}</p>
+    ${cardDisplay}
+    <h3 class="disp mb-3" style="font-size:1.15rem;line-height:1.5;color:var(--parch)">${q.prompt}</h3>
+    ${optionsHtml}
+  `;
+}
+
+function answerDiag(optIdx) {
+  const q = DIAG_QUESTIONS[STATE.currentDiagQ];
+  const chosen = q.options[optIdx];
+  STATE.diagScore += chosen.score;
+  STATE.diagAnswers.push({qid: q.id, score: chosen.score, tag: chosen.tag});
+
+  const isGood = chosen.score >= 3;
+  const opts = document.querySelectorAll('.qopt');
+  opts.forEach((o, i) => {
+    o.disabled = true;
+    if (i === optIdx) o.classList.add(isGood ? 'correct' : 'wrong');
+    if (!isGood && q.options[i].score >= 3) o.classList.add('reveal');
+  });
+
+  const feedback = document.createElement('div');
+  feedback.className = `feedback card-in ${isGood ? 'good' : 'poor'}`;
+  feedback.innerHTML = `<p class="serif" style="font-size:1rem;line-height:1.65">${isGood ? q.feedback.good : q.feedback.poor}</p>
+    <div class="mt-2 text-center">
+      <button class="btn btn-sm btn-ghost" onclick="nextDiagQ()">${STATE.currentDiagQ < DIAG_QUESTIONS.length - 1 ? 'Next Question →' : 'See My Profile →'}</button>
+    </div>`;
+  document.getElementById('diag-content').appendChild(feedback);
+  feedback.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function nextDiagQ() {
+  STATE.currentDiagQ++;
+  if (STATE.currentDiagQ >= DIAG_QUESTIONS.length) {
+    finishDiagnostic();
+  } else {
+    renderDiagnosticQ();
+    document.getElementById('screen-diagnostic').scrollTop = 0;
+  }
+}
+
+function finishDiagnostic() {
+  const maxScore = DIAG_QUESTIONS.reduce((a, q) => a + Math.max(...q.options.map(o => o.score)), 0);
+  const pct = STATE.diagScore / maxScore;
+
+  const depthCount = STATE.diagAnswers.filter(a => a.tag === 'depth').length;
+  const surfaceCount = STATE.diagAnswers.filter(a => a.tag === 'surface' || a.tag === 'wrong').length;
+
+  let profile;
+  if (pct >= 0.75) {
+    profile = {
+      level: 'strong',
+      title: 'The Initiated Reader',
+      summary: 'Your instincts are already moving beyond surface symbolism. You understand that position shapes meaning, that cards in combination create narrative, and that the useful question is rarely what a card "means" in isolation.',
+      strengths: ['Relational thinking','Depth of interpretation','Positional awareness'],
+      gaps: depthCount === DIAG_QUESTIONS.length ? [] : ['Some pairings still need practice','Minor Arcana not yet assessed'],
+      startPoint: 'Begin directly with spread practice. The Minor Arcana will be your focus — you don\'t need the Major Arcana foundations.',
+      unlockCount: 15
+    };
+  } else if (pct >= 0.45) {
+    profile = {
+      level: 'partial',
+      title: 'The Developing Eye',
+      summary: 'You have real foundations to build on. You recognise depth when you see it, but your default is still sometimes to read cards individually rather than in relationship. The positional work is where to focus.',
+      strengths: ['Symbol recognition','Basic meaning recall'],
+      gaps: ['Relational reading','Positional interpretation','Pairing analysis'],
+      startPoint: 'Start with the three-card spread using Major Arcana only, until positional thinking becomes second nature.',
+      unlockCount: 10
+    };
+  } else {
+    profile = {
+      level: 'beginner',
+      title: 'The Open Mind',
+      summary: 'You\'re approaching this freshly, which is an advantage. Nothing to unlearn. The assessment shows that you\'re drawn to surface meanings right now — which is where everyone starts. The learning path is designed for exactly this.',
+      strengths: ['Openness','No entrenched misconceptions'],
+      gaps: ['Card meanings in depth','Relational reading','Positional awareness'],
+      startPoint: 'Begin with the Major Arcana in the Fool\'s Journey sequence, using two or three cards at a time in spreads.',
+      unlockCount: 7
+    };
+  }
+
+  STATE.profile = profile;
+  STATE.unlockedCards = MAJOR_ARCANA.slice(0, profile.unlockCount).map(c => c.id);
+  saveState();
+
+  const strengthBadges = profile.strengths.map(s => `<span class="badge badge-strong">${s}</span>`).join('');
+  const gapBadges = profile.gaps.map(g => `<span class="badge badge-weak">${g}</span>`).join('');
+
+  document.getElementById('diag-result-content').innerHTML = `
+    <div class="text-center mb-3">
+      <div style="font-size:2.5rem;margin-bottom:1rem">✦</div>
+      <p class="label mb-1">Your Reading Profile</p>
+      <h2 class="disp" style="font-size:1.9rem;color:var(--gold-l)">${profile.title}</h2>
+    </div>
+    <div class="dvd"><span>·</span></div>
+    <p class="serif mb-3" style="font-size:1.05rem;line-height:1.7;color:var(--parch-d)">${profile.summary}</p>
+    <p class="label mb-1">Strengths</p>
+    <div class="mb-3">${strengthBadges}</div>
+    ${profile.gaps.length ? `<p class="label mb-1">Areas to develop</p><div class="mb-3">${gapBadges}</div>` : ''}
+    <div class="feedback mb-3">
+      <p class="label mb-1">Where you begin</p>
+      <p class="serif" style="font-size:1rem;line-height:1.65;color:var(--parch-d)">${profile.startPoint}</p>
+    </div>
+    <p class="text-muted text-sm text-center mb-3">${profile.unlockCount} cards unlocked in your library</p>
+    <button class="btn" onclick="goToDashboard()">Enter Your Practice →</button>
+    <button class="btn btn-ghost mt-2" onclick="showScreen('screen-library')">Browse Card Library</button>
+  `;
+
+  showScreen('screen-diag-result');
+}
+
+function goToDashboard() {
+  renderDashboard();
+  if (!getToken()) {
+    showScreen('screen-setup');
+  } else {
+    showScreen('screen-dashboard');
+  }
+}
+
+// ══════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════
+function renderDashboard() {
+  if (!STATE.profile) {
+    document.getElementById('dashboard-content').innerHTML = `
+      <div class="pad text-center">
+        <p class="serif text-muted mt-4" style="font-size:1rem">Complete the assessment first to unlock your practice path.</p>
+        <button class="btn mt-3" onclick="startDiagnostic()">Take the Assessment</button>
+      </div>`;
+    return;
+  }
+
+  const totalQuizzes = STATE.quizHistory.length;
+  const totalSpreads = STATE.spreadHistory.length;
+  const masteredCount = STATE.masteredCards.length;
+  const unlockedCount = STATE.unlockedCards.length;
+
+  // Show sync bar
+  const syncBar = document.getElementById('sync-status-bar');
+  if (syncBar) {
+    syncBar.classList.remove('hidden');
+    if (getToken()) {
+      setSyncStatus('ok', 'Connected to GitHub');
+    } else {
+      setSyncStatus('warn', 'Local only — tap to connect');
+      syncBar.querySelector('button').onclick = () => showScreen('screen-setup');
+    }
+  }
+
+  document.getElementById('dashboard-content').innerHTML = `
+    <div class="pad">
+      <p class="label mb-1">Welcome back</p>
+      <h2 class="disp" style="font-size:1.7rem;color:var(--gold-l)">${STATE.profile.title}</h2>
+      <div class="dvd"><span>·</span></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.5rem">
+        <div style="background:var(--surface);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.9rem;text-align:center">
+          <div style="font-size:1.6rem;font-weight:300;color:var(--gold);font-family:'Cormorant Garamond',serif">${unlockedCount}</div>
+          <div class="text-muted" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;margin-top:.2rem">Cards Unlocked</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.9rem;text-align:center">
+          <div style="font-size:1.6rem;font-weight:300;color:var(--gold);font-family:'Cormorant Garamond',serif">${masteredCount}</div>
+          <div class="text-muted" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;margin-top:.2rem">Cards Mastered</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.9rem;text-align:center">
+          <div style="font-size:1.6rem;font-weight:300;color:var(--gold);font-family:'Cormorant Garamond',serif">${totalSpreads}</div>
+          <div class="text-muted" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;margin-top:.2rem">Spreads Done</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.9rem;text-align:center">
+          <div style="font-size:1.6rem;font-weight:300;color:var(--gold);font-family:'Cormorant Garamond',serif">${totalQuizzes}</div>
+          <div class="text-muted" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;margin-top:.2rem">Quizzes Taken</div>
+        </div>
+      </div>
+
+      <p class="label mb-2">Practice</p>
+      <button class="btn mb-2" onclick="startSpread('three_card')">Three Card Spread ↗</button>
+      <button class="btn btn-ghost mb-2" onclick="startSpread('situation_challenge')">Situation & Path Spread ↗</button>
+      <button class="btn btn-ghost mb-2" onclick="startSpread('mind_body_spirit')">Mind · Body · Spirit Spread ↗</button>
+
+      <div class="dvd"><span>·</span></div>
+
+      <p class="label mb-2">Quiz & Test</p>
+      <button class="btn mb-2" onclick="startQuiz('meaning')">Card Meaning Quiz ↗</button>
+      <button class="btn btn-ghost mb-2" onclick="startQuiz('pairing')">Card Pairing Quiz ↗</button>
+
+      <div class="dvd"><span>·</span></div>
+
+      <p class="label mb-2">Reading Simulator</p>
+      <button class="btn btn-accent mb-2" onclick="startReading(0)">Guided Reading — Redundancy ↗</button>
+
+      <div class="dvd"><span>·</span></div>
+      <button class="btn btn-ghost" onclick="goToLibrary()">Browse Card Library ↗</button>
+    </div>`;
+}
+
+function goToLibrary() {
+  STATE.libraryPrevScreen = 'screen-dashboard';
+  renderLibrary('major');
+  showScreen('screen-library');
+}
+
+// ══════════════════════════════════════
+//  CARD LIBRARY
+// ══════════════════════════════════════
+function renderLibrary(filter) {
+  let cards;
+  if (filter === 'major') cards = MAJOR_ARCANA;
+  else if (filter === 'minor-cups') cards = MINOR_ARCANA_SAMPLE.filter(c => c.suit === 'cups');
+  else if (filter === 'minor-wands') cards = MINOR_ARCANA_SAMPLE.filter(c => c.suit === 'wands');
+  else if (filter === 'minor-swords') cards = MINOR_ARCANA_SAMPLE.filter(c => c.suit === 'swords');
+  else if (filter === 'minor-pents') cards = MINOR_ARCANA_SAMPLE.filter(c => c.suit === 'pentacles');
+  else cards = ALL_CARDS;
+
+  const grid = document.getElementById('library-grid');
+  grid.innerHTML = cards.map(card => {
+    const unlocked = !STATE.unlockedCards.length || STATE.unlockedCards.includes(card.id);
+    const mastered = STATE.masteredCards.includes(card.id);
+    const cls = mastered ? 'mastered' : (unlocked ? 'unlocked' : 'locked');
+    const status = mastered ? '★ mastered' : (unlocked ? 'unlocked' : 'locked');
+    const libImgSrc = CARD_IMAGES[card.id];
+    const libImgHtml = libImgSrc
+      ? `<img src="${libImgSrc}" alt="${card.name}" style="width:100%;aspect-ratio:2/3.4;object-fit:cover;border-radius:2px;margin-bottom:.3rem;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" loading="lazy"><div style="font-size:1.5rem;margin-bottom:.25rem;display:none">${card.symbol}</div>`
+      : `<div style="font-size:1.5rem;margin-bottom:.25rem">${card.symbol}</div>`;
+    return `<div class="lib-card ${cls}" onclick="${unlocked ? `openFlashcard('${card.id}','screen-library')` : ''}">
+      ${libImgHtml}
+      <div class="lc-name">${card.name}</div>
+      <div class="lc-st">${status}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterLibrary(filter, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderLibrary(filter);
+}
+
+// ══════════════════════════════════════
+//  FLASHCARD
+// ══════════════════════════════════════
+function openFlashcard(cardId, prevScreen) {
+  STATE.flashcardPrevScreen = prevScreen || 'screen-library';
+  const card = ALL_CARDS.find(c => c.id === cardId);
+  if (!card) return;
+
+  document.getElementById('flashcard-title').textContent = card.name;
+  document.getElementById('flashcard-back-btn').onclick = () => showScreen(STATE.flashcardPrevScreen);
+
+  const showReversed = STATE.path === 'reversed';
+
+  document.getElementById('flashcard-content').innerHTML = `
+    <div class="flip-wrap" onclick="flipCard(this)">
+      <div class="flip-inner" id="flipInner">
+        <div class="flip-f">
+          <div style="width:90px;height:150px;margin:0 auto .75rem">${cardImgHtml(card,false,'','width:100%;height:100%;object-fit:cover;border-radius:4px')}</div>
+          <p class="label mb-1">${card.num} · ${card.suit === 'major' ? 'Major Arcana' : card.suit}</p>
+          <h2 class="disp" style="font-size:1.6rem;color:var(--gold-l)">${card.name}</h2>
+          <div class="dvd" style="margin:.75rem 0"><span>·</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem;justify-content:center">
+            ${card.keywords.map(k => `<span style="font-size:.65rem;color:var(--gold);border:1px solid rgba(201,168,76,.35);padding:.2rem .55rem;border-radius:1px;letter-spacing:.06em">${k}</span>`).join('')}
+          </div>
+          <p class="text-muted text-sm mt-3" style="font-size:.7rem;letter-spacing:.08em">Tap to reveal meaning</p>
+        </div>
+        <div class="flip-b">
+          <p class="label mb-2">Upright</p>
+          <p class="serif mb-3" style="font-size:.95rem;line-height:1.7;color:var(--parch-d)">${card.upright}</p>
+          ${showReversed ? `<p class="label mb-2" style="color:var(--accent-l)">Reversed</p>
+          <p class="serif mb-3" style="font-size:.95rem;line-height:1.7;color:var(--parch-d)">${card.reversed}</p>` : ''}
+          <p class="label mb-2">In Combination</p>
+          <p class="serif mb-3" style="font-size:.9rem;line-height:1.65;color:var(--parch-d)">${card.relational}</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin:1.25rem 0">
+      <p class="label mb-2">In Life Scenarios</p>
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <div style="background:var(--surface);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.9rem">
+          <p class="label mb-1" style="font-size:.55rem;color:var(--accent-l)">Love & Relationships</p>
+          <p class="serif" style="font-size:.95rem;line-height:1.6;color:var(--parch-d)">${card.scenario.love}</p>
+        </div>
+        <div style="background:var(--surface);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.9rem">
+          <p class="label mb-1" style="font-size:.55rem;color:rgba(201,168,76,.8)">Work & Career</p>
+          <p class="serif" style="font-size:.95rem;line-height:1.6;color:var(--parch-d)">${card.scenario.work}</p>
+        </div>
+        <div style="background:var(--surface);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.9rem">
+          <p class="label mb-1" style="font-size:.55rem;color:var(--green-l)">Self & Inner Work</p>
+          <p class="serif" style="font-size:.95rem;line-height:1.6;color:var(--parch-d)">${card.scenario.self}</p>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:1rem">
+      <button class="btn btn-sm btn-ghost" onclick="markMastered('${card.id}')">Mark as Mastered</button>
+    </div>`;
+
+  showScreen('screen-flashcard');
+}
+
+function flipCard(wrap) {
+  document.getElementById('flipInner').classList.toggle('flipped');
+}
+
+function markMastered(cardId) {
+  if (!STATE.masteredCards.includes(cardId)) {
+    STATE.masteredCards.push(cardId);
+    saveState();
+    showToast('Card marked as mastered ✦');
+  } else {
+    showToast('Already mastered');
+  }
+}
+
+// ══════════════════════════════════════
+//  SPREAD PRACTICE
+// ══════════════════════════════════════
+function startSpread(spreadId) {
+  const spread = SPREADS[spreadId];
+  const available = STATE.unlockedCards.length ? MAJOR_ARCANA.filter(c => STATE.unlockedCards.includes(c.id)) : MAJOR_ARCANA;
+
+  const shuffled = [...available].sort(() => Math.random() - 0.5);
+  const drawn = shuffled.slice(0, spread.positions.length).map((card, i) => ({
+    card,
+    position: spread.positions[i],
+    reversed: STATE.path === 'reversed' && Math.random() > 0.6
+  }));
+
+  STATE.currentSpread = { spread, drawn, revealed: [], activeIdx: 0 };
+  document.getElementById('spread-title').textContent = spread.name;
+  renderSpread();
+  showScreen('screen-spread');
+}
+
+function renderSpread() {
+  const { spread, drawn, revealed, activeIdx } = STATE.currentSpread;
+
+  const slotsHtml = drawn.map((d, i) => {
+    const isRevealed = revealed.includes(i);
+    const isActive = i === activeIdx;
+    return `
+      <div class="spread-slot">
+        <div class="spread-card ${isRevealed ? 'filled' : ''} ${isActive ? 'active' : ''}" onclick="revealSpreadCard(${i})">
+          ${isRevealed
+            ? `${CARD_IMAGES[d.card.id]
+                ? `<div style="position:absolute;inset:0;${d.reversed?'transform:rotate(180deg)':''}"><img src="${CARD_IMAGES[d.card.id]}" alt="${d.card.name}" style="width:100%;height:100%;object-fit:cover;border-radius:3px" onerror="this.style.display='none'" loading="lazy"></div><div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.75));padding:.3rem .2rem .25rem;text-align:center"><div class='sc-name'>${d.card.name}</div>${d.reversed?'<div class=\'sc-rev\'>rev.</div>':''}</div>`
+                : `<div class='sc-sym'>${d.card.symbol}</div><div class='sc-name'>${d.card.name}</div>${d.reversed?'<div class=\'sc-rev\'>reversed</div>':''}`}`
+            : `<div style="color:rgba(201,168,76,.25);font-size:1.1rem">✦</div>`}
+        </div>
+        <div class="spread-lbl">${d.position}</div>
+      </div>`;
+  }).join('');
+
+  const activeCard = drawn[activeIdx];
+  const isRevealedActive = revealed.includes(activeIdx);
+
+  let cardDetail = '';
+  if (isRevealedActive) {
+    const card = activeCard.card;
+    const isRev = activeCard.reversed;
+    cardDetail = `
+      <div class="card-in">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <p class="label" style="font-size:.6rem">${activeCard.position} Position</p>
+            <h3 class="disp" style="font-size:1.3rem;color:var(--gold-l)">${card.name} ${isRev ? '<span style="color:var(--accent-l);font-size:.9rem">(Reversed)</span>' : ''}</h3>
+          </div>
+          <button class="btn btn-sm btn-ghost" style="flex-shrink:0" onclick="openFlashcard('${card.id}','screen-spread')">Full Card ↗</button>
+        </div>
+        <div class="feedback">
+          <p class="serif" style="font-size:1rem;line-height:1.65;color:var(--parch-d)">${isRev ? card.reversed : card.upright}</p>
+        </div>
+        <div style="margin-top:.75rem">
+          <p class="label mb-1" style="font-size:.55rem">In This Context</p>
+          <p class="serif" style="font-size:.9rem;line-height:1.6;color:var(--parch-d)">${card.relational}</p>
+        </div>
+        ${revealed.length === drawn.length ? `
+          <div class="dvd mt-3"><span>·</span></div>
+          <p class="label mb-2" style="text-align:center">Reading Complete</p>
+          <p class="serif text-muted mb-3" style="font-size:.9rem;line-height:1.6;text-align:center">Review the cards in combination. What narrative runs across the three positions?</p>
+          <button class="btn mb-2" onclick="startSpread('${spread.id}')">Draw Again</button>
+          <button class="btn btn-ghost" onclick="showScreen('screen-dashboard')">Back to Practice</button>
+        ` : `
+          ${activeIdx < drawn.length - 1
+            ? `<button class="btn btn-ghost mt-2" onclick="nextSpreadCard()">Next Position →</button>`
+            : ''}
+        `}
+      </div>`;
+  }
+
+  const currentSpreadDef = STATE.currentSpread.spread;
+  document.getElementById('spread-content').innerHTML = `
+    <p class="label mb-1">${currentSpreadDef.description}</p>
+    <div class="spread-grid">${slotsHtml}</div>
+    <div class="dvd"><span>·</span></div>
+    ${isRevealedActive ? cardDetail : `<p class="serif text-muted text-center" style="font-size:1rem">Tap a card position to reveal it.</p>`}`;
+}
+
+function revealSpreadCard(idx) {
+  const { revealed } = STATE.currentSpread;
+  if (!revealed.includes(idx)) {
+    revealed.push(idx);
+    STATE.currentSpread.activeIdx = idx;
+    STATE.spreadHistory.push({ date: Date.now() });
+    saveState();
+  } else {
+    STATE.currentSpread.activeIdx = idx;
+  }
+  renderSpread();
+}
+
+function nextSpreadCard() {
+  STATE.currentSpread.activeIdx++;
+  renderSpread();
+  document.getElementById('screen-spread').scrollTop = 0;
+}
+
+// ══════════════════════════════════════
+//  CARD QUIZ
+// ══════════════════════════════════════
+function startQuiz(type) {
+  const available = STATE.unlockedCards.length
+    ? MAJOR_ARCANA.filter(c => STATE.unlockedCards.includes(c.id))
+    : MAJOR_ARCANA;
+
+  const shuffled = [...available].sort(() => Math.random() - 0.5);
+  STATE.currentQuizCards = shuffled.slice(0, Math.min(6, shuffled.length));
+  STATE.currentQuizQ = 0;
+  STATE.currentQuizType = type;
+  renderQuizQ();
+  showScreen('screen-quiz');
+}
+
+function renderQuizQ() {
+  const cards = STATE.currentQuizCards;
+  const idx = STATE.currentQuizQ;
+  const card = cards[idx];
+  const total = cards.length;
+
+  document.getElementById('quiz-counter').textContent = `${idx + 1} / ${total}`;
+
+  let prompt, options;
+
+  if (STATE.currentQuizType === 'meaning') {
+    // Pick 3 wrong answers from other unlocked cards
+    const others = MAJOR_ARCANA.filter(c => c.id !== card.id).sort(() => Math.random() - 0.5).slice(0, 3);
+    const correctAnswer = card.keywords[0] + ' — ' + card.upright.substring(0, 80) + '...';
+    const wrongAnswers = others.map(c => c.keywords[0] + ' — ' + c.upright.substring(0, 80) + '...');
+    const allOptions = [correctAnswer, ...wrongAnswers].sort(() => Math.random() - 0.5);
+    const correctIdx = allOptions.indexOf(correctAnswer);
+    prompt = `What is the primary meaning of ${card.name}?`;
+    options = allOptions.map((o, i) => ({ text: o, correct: i === correctIdx }));
+  } else {
+    // Pairing quiz: show a card pair, ask what the combination explores
+    const pair = MAJOR_ARCANA.filter(c => c.id !== card.id).sort(() => Math.random() - 0.5)[0];
+    prompt = `${card.name} appears next to ${pair.name}. What territory does this pairing open?`;
+    const correctOpt = `The tension between ${card.keywords[0]} and ${pair.keywords[0]} — and how these forces interact for the querent.`;
+    const wrongOpts = [
+      `These cards cancel each other out and mean the situation is neutral.`,
+      `The reading is only about ${card.name} — the second card provides context, nothing more.`,
+      `Both cards must be read in sequence, with ${card.name} representing the past.`
+    ];
+    const allOptions = [correctOpt, ...wrongOpts].sort(() => Math.random() - 0.5);
+    const correctIdx = allOptions.indexOf(correctOpt);
+    options = allOptions.map((o, i) => ({ text: o, correct: i === correctIdx }));
+  }
+
+  const pbarWidth = Math.round((idx / total) * 100);
+
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="pbar mb-3"><div class="pbar-fill" style="width:${pbarWidth}%"></div></div>
+    <div style="text-align:center;margin-bottom:1.25rem">
+      <div style="width:75px;height:125px;margin:0 auto .5rem">${cardImgHtml(card,false,'','width:100%;height:100%;object-fit:cover;border-radius:4px')}</div>
+      <p class="label">${card.name}</p>
+    </div>
+    <h3 class="disp mb-3" style="font-size:1.15rem;line-height:1.5;color:var(--parch)">${prompt}</h3>
+    ${options.map((o, i) => `<button class="qopt" onclick="answerQuiz(${i}, ${o.correct})">${o.text}</button>`).join('')}
+    <div style="text-align:center;margin-top:.5rem">
+      <button class="btn btn-sm btn-ghost" onclick="openFlashcard('${card.id}','screen-quiz')">Study this card first ↗</button>
+    </div>`;
+}
+
+function answerQuiz(idx, correct) {
+  const opts = document.querySelectorAll('.qopt');
+  opts.forEach((o, i) => {
+    o.disabled = true;
+    if (i === idx) o.classList.add(correct ? 'correct' : 'wrong');
+  });
+  if (!correct) {
+    opts.forEach(o => {
+      const onclk = o.getAttribute('onclick') || '';
+      if (onclk.includes(', true)')) o.classList.add('reveal');
+    });
+  }
+
+  STATE.quizHistory.push({ correct, date: Date.now() });
+  saveState();
+
+  const feedbackDiv = document.createElement('div');
+  feedbackDiv.className = `feedback card-in ${correct ? 'good' : 'poor'}`;
+  feedbackDiv.innerHTML = `<p class="serif" style="font-size:1rem;line-height:1.65">${correct ? 'Exactly right. Reading between cards and positions is the skill.' : 'Not quite. The most useful frame is always about the dynamic between the card\'s core energy and where it sits in relation to other cards.'}</p>
+    <div class="mt-2 text-center">
+      <button class="btn btn-sm btn-ghost" onclick="nextQuizQ()">${STATE.currentQuizQ < STATE.currentQuizCards.length - 1 ? 'Next Card →' : 'See Results →'}</button>
+    </div>`;
+  document.getElementById('quiz-content').appendChild(feedbackDiv);
+  feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function nextQuizQ() {
+  STATE.currentQuizQ++;
+  if (STATE.currentQuizQ >= STATE.currentQuizCards.length) {
+    finishQuiz();
+  } else {
+    renderQuizQ();
+    document.getElementById('screen-quiz').scrollTop = 0;
+  }
+}
+
+function finishQuiz() {
+  const recentHistory = STATE.quizHistory.slice(-STATE.currentQuizCards.length);
+  const correct = recentHistory.filter(h => h.correct).length;
+  const total = STATE.currentQuizCards.length;
+  const pct = Math.round((correct / total) * 100);
+
+  let message;
+  if (pct >= 80) message = 'Strong session. The relational thinking is becoming instinctive.';
+  else if (pct >= 55) message = 'Solid progress. The gaps are where the growth is — revisit those cards.';
+  else message = 'This is useful data. The cards you struggled with are exactly what to focus on next.';
+
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="text-center">
+      <div style="font-size:2.5rem;margin:1rem 0;font-family:'Cormorant Garamond',serif;color:var(--gold)">${correct}/${total}</div>
+      <p class="label mb-2">${pct}% accuracy</p>
+    </div>
+    <div class="dvd"><span>·</span></div>
+    <p class="serif mb-3" style="font-size:1.05rem;line-height:1.7;color:var(--parch-d)">${message}</p>
+    <button class="btn mb-2" onclick="startQuiz(STATE.currentQuizType)">Try Again</button>
+    <button class="btn btn-ghost" onclick="showScreen('screen-dashboard')">Back to Practice</button>`;
+}
+
+// ══════════════════════════════════════
+//  READING SIMULATOR
+// ══════════════════════════════════════
+function startReading(idx) {
+  STATE.currentReading = READING_SCENARIOS[idx];
+  STATE.readingStep = 0;
+  renderReading();
+  showScreen('screen-reading');
+}
+
+function renderReading() {
+  const reading = STATE.currentReading;
+  const step = STATE.readingStep;
+  const readingCards = reading.cards;
+
+  const spreadHtml = readingCards.map(s => {
+    const card = ALL_CARDS.find(c => c.id === s.card_id);
+    return `<div class="spread-slot">
+      <div class="spread-card filled" style="position:relative;overflow:hidden">
+        ${card && CARD_IMAGES[card.id]
+          ? `<div style="position:absolute;inset:0;${s.reversed?'transform:rotate(180deg)':''}"><img src="${CARD_IMAGES[card.id]}" alt="${card ? card.name : s.card_id}" style="width:100%;height:100%;object-fit:cover;border-radius:3px" loading="lazy"></div><div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:.3rem .2rem .2rem;text-align:center"><div class='sc-name'>${card ? card.name : s.card_id}</div>${s.reversed?'<div class=\'sc-rev\'>rev.</div>':''}</div>`
+          : `<div class='sc-sym'>${card ? card.symbol : '?'}</div><div class='sc-name'>${card ? card.name : s.card_id}</div>${s.reversed?'<div class=\'sc-rev\'>rev.</div>':''}`}
+      </div>
+      <div class="spread-lbl">${s.position}</div>
+    </div>`;
+  }).join('');
+
+  let stepsHtml = '';
+  for (let i = 0; i <= step && i < reading.steps.length; i++) {
+    const s = reading.steps[i];
+    const isActive = i === step;
+    stepsHtml += `
+      <div class="r-bubble">${s.prompt}</div>
+      ${isActive ? s.options.map((o, oi) => {
+        const cls = o._chosen ? (o.correct ? 'chosen' : 'chosen') : '';
+        return `<button class="branch-opt ${cls}" onclick="answerReading(${i}, ${oi})" ${o._chosen ? 'disabled' : ''}>${o.text}</button>`;
+      }).join('') : `<div class="feedback good"><p class="serif" style="font-size:.95rem;line-height:1.65;color:var(--parch-d)">${s._chosen_response || ''}</p></div>`}`;
+  }
+
+  const isComplete = step >= reading.steps.length;
+
+  document.getElementById('reading-content').innerHTML = `
+    <div class="feedback mb-3" style="border-color:rgba(201,168,76,.3)">
+      <p class="label mb-1">The Querrant</p>
+      <p class="serif" style="font-size:1rem;line-height:1.65;color:var(--parch-d)">${reading.querrant}</p>
+    </div>
+    <div class="spread-grid">${spreadHtml}</div>
+    <div class="dvd"><span>·</span></div>
+    ${stepsHtml}
+    ${isComplete ? `
+      <div class="dvd mt-3"><span>·</span></div>
+      <p class="label text-center mb-2">Reading complete</p>
+      <p class="serif text-muted mb-3" style="font-size:.95rem;line-height:1.65;text-align:center">You have worked through the full arc of this reading. Notice how each card's meaning shifted depending on what came before and after it.</p>
+      <button class="btn btn-ghost" onclick="showScreen('screen-dashboard')">Back to Practice</button>
+    ` : ''}`;
+}
+
+function answerReading(stepIdx, optIdx) {
+  const step = STATE.currentReading.steps[stepIdx];
+  const opt = step.options[optIdx];
+  step.options.forEach(o => o._chosen = false);
+  opt._chosen = true;
+  step._chosen_response = opt.chosen_response;
+
+  STATE.readingStep = stepIdx + 1;
+  renderReading();
+  document.getElementById('screen-reading').scrollTop = 0;
+}
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  buildStars();
+  initHome();
+  renderLibrary('major');
+
+  // Show sync status on dashboard if token exists
+  if (getToken()) {
+    fetchFromGitHub().then(synced => {
+      if (synced) renderDashboard();
+    });
+  }
+
+  // Flashcard back button default
+  document.getElementById('flashcard-back-btn').onclick = () => showScreen(STATE.flashcardPrevScreen || 'screen-library');
+});
+</script>
+</body>
+</html>
