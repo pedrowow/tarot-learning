@@ -103,8 +103,8 @@ body{font-family:'Raleway',sans-serif;background:var(--ink);color:var(--parch);m
 .flip-b{transform:rotateY(180deg);justify-content:flex-start;padding-top:1.5rem;overflow-y:auto}
 
 /* SPREAD */
-.spread-grid{display:flex;gap:.6rem;justify-content:center;flex-wrap:nowrap;margin:1.25rem 0}
-.spread-slot{flex:1;min-width:0}
+.spread-grid{display:flex;gap:.5rem;justify-content:center;flex-wrap:nowrap;margin:1rem 0;padding:0 .5rem}
+.spread-slot{flex:1;min-width:0;max-width:90px}
 .spread-card{aspect-ratio:2/3.4;background:rgba(201,168,76,.04);border:1px dashed rgba(201,168,76,.25);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;gap:.3rem}
 .spread-card.filled{border-style:solid;border-color:rgba(201,168,76,.4);background:var(--card-bg)}
 .spread-card.active{border-color:var(--gold);box-shadow:0 0 10px rgba(201,168,76,.18)}
@@ -120,14 +120,14 @@ body{font-family:'Raleway',sans-serif;background:var(--ink);color:var(--parch);m
 .branch-opt.chosen{border-color:var(--gold);background:rgba(201,168,76,.1);color:var(--gold-l)}
 
 /* LIBRARY GRID */
-.lib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;padding:1rem}
-.lib-card{background:var(--card-bg);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.65rem .4rem;text-align:center;cursor:pointer;transition:all .2s}
+.lib-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;padding:.75rem}
+.lib-card{background:var(--card-bg);border:1px solid rgba(201,168,76,.18);border-radius:3px;padding:.5rem .3rem;text-align:center;cursor:pointer;transition:all .2s}
 .lib-card:hover.unlocked{border-color:var(--gold);transform:translateY(-1px)}
 .lib-card.locked{opacity:.3;cursor:default}
 .lib-card.mastered{border-color:rgba(58,112,80,.5)}
 .lib-card .lc-sym{font-size:1.5rem;margin-bottom:.25rem;line-height:1}
-.lib-card .lc-name{font-family:'Cormorant Garamond',serif;font-size:.72rem;color:var(--parch-d);line-height:1.2}
-.lib-card .lc-st{font-size:.55rem;color:var(--gold);margin-top:.2rem;letter-spacing:.08em;text-transform:uppercase}
+.lib-card .lc-name{font-family:'Cormorant Garamond',serif;font-size:.65rem;color:var(--parch-d);line-height:1.2}
+.lib-card .lc-st{font-size:.5rem;color:var(--gold);margin-top:.15rem;letter-spacing:.06em;text-transform:uppercase}
 
 /* MODAL SHEET */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:flex-end;justify-content:center}
