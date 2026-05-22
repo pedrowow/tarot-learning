@@ -2,6 +2,8 @@
 
 A structured tarot learning app built for the browser, designed to take you from first card to full reading. Saveable as a home screen web app on iOS and Android.
 
+Code created by Claude.
+
 ---
 
 ## What it is
