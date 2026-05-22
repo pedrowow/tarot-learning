@@ -2,7 +2,7 @@
   "name": "The Reader \u2014 Tarot",
   "short_name": "The Reader",
   "description": "Rider Waite Smith tarot learning \u2014 from first card to full reading",
-  "start_url": "/",
+  "start_url": "/tarot-learning",
   "display": "standalone",
   "background_color": "#0F0C08",
   "theme_color": "#0F0C08",
