@@ -55,9 +55,11 @@ All 78 cards browsable by suit, each labelled with its home level and starred wh
 
 ---
 
-## Cross-device sync
+## Progress and sync
 
-Progress is stored locally and optionally synced to `progress.json` in this repository via the GitHub API. Enter a personal access token (classic, `repo` scope only) once per device and your level, mastered cards, quiz history, and spread counts stay in step across phone and laptop. The token is stored only in the browser's localStorage and transmitted only to `api.github.com`.
+The app is free to use by anyone at the URL below. Progress — level, mastered cards, quiz history, spread counts — is saved automatically in the browser's localStorage, per device, with no account needed. Clearing browser data clears progress.
+
+Cross-device sync is an owner-only feature: it writes progress to `progress.json` in this repository via the GitHub API, so it works only with a personal access token for the repository owner's account (classic token, `repo` scope only). The token is stored solely in the browser's localStorage and transmitted only to `api.github.com`. Visitors can simply tap *Continue* on the setup screen. The repository is public because GitHub Pages requires it on a free plan — the only personal data it contains is the owner's own learning progress.
 
 A *Reset All Progress* option lives on the Sync Setup screen (tap the sync bar on the dashboard). It wipes progress locally and on GitHub in one confirmed action, and stamps a reset epoch so other devices adopt the clean slate on their next sync rather than resurrecting old history. The token survives a reset.
 

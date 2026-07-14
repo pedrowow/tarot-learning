@@ -321,17 +321,21 @@ body{font-family:'Raleway',sans-serif;background:var(--ink);color:var(--parch);m
     <span></span>
   </div>
   <div class="scroll pad">
-    <p class="label mb-2">Cross-device progress sync</p>
-    <h2 class="disp mb-3" style="font-size:1.7rem;color:var(--gold-l)">Connect GitHub</h2>
-    <p class="serif mb-3" style="font-size:1rem;line-height:1.7;color:var(--parch-d)">Your progress will be saved to a file in your GitHub repo. It syncs automatically whenever you complete something, so your phone and laptop stay in step.</p>
+    <p class="label mb-2">Your progress</p>
+    <h2 class="disp mb-3" style="font-size:1.7rem;color:var(--gold-l)">Saved On This Device</h2>
+    <p class="serif mb-3" style="font-size:1rem;line-height:1.7;color:var(--parch-d)">Your levels, mastered cards, and quiz history are stored in this browser and will be here whenever you return. No account needed — just continue.</p>
+    <button class="btn mb-3" onclick="skipGithubSetup()">Continue</button>
+
+    <div class="dvd" style="margin:1.5rem 0 1.25rem"><span>·</span></div>
+    <p class="label mb-2">App owner only</p>
+    <p class="serif mb-3" style="font-size:.9rem;line-height:1.65;color:var(--parch-d)">Cross-device sync writes progress to a file in this app's GitHub repository, so it works only with a token for the repository owner's account. Visitors can ignore this section.</p>
     <div class="feedback mb-3">
       <p class="label mb-1">How to get a token</p>
       <p class="serif" style="font-size:.9rem;line-height:1.65;color:var(--parch-d)">GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token. Tick the <strong>repo</strong> scope only. Copy it — you only see it once.</p>
     </div>
     <input class="setup-input" id="gh-token-input" type="password" placeholder="ghp_your_token_here" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     <p class="text-muted text-sm mb-3" style="font-size:.7rem">Stored only in this browser's localStorage. Never transmitted except to api.github.com.</p>
-    <button class="btn mb-2" onclick="saveGithubToken()">Save Token & Sync</button>
-    <button class="btn btn-ghost" onclick="skipGithubSetup()">Skip — use local only</button>
+    <button class="btn btn-ghost" onclick="saveGithubToken()">Save Token & Sync</button>
 
     <div class="dvd" style="margin:1.75rem 0 1.25rem"><span>·</span></div>
     <p class="label mb-2" style="color:var(--accent-l)">Danger Zone</p>
