@@ -332,6 +332,11 @@ body{font-family:'Raleway',sans-serif;background:var(--ink);color:var(--parch);m
     <p class="text-muted text-sm mb-3" style="font-size:.7rem">Stored only in this browser's localStorage. Never transmitted except to api.github.com.</p>
     <button class="btn mb-2" onclick="saveGithubToken()">Save Token & Sync</button>
     <button class="btn btn-ghost" onclick="skipGithubSetup()">Skip — use local only</button>
+
+    <div class="dvd" style="margin:1.75rem 0 1.25rem"><span>·</span></div>
+    <p class="label mb-2" style="color:var(--accent-l)">Danger Zone</p>
+    <p class="serif mb-2" style="font-size:.9rem;line-height:1.65;color:var(--parch-d)">Wipe all progress — mastered cards, quiz history and accuracy, quiz counts, and spreads — on this device and on GitHub, and start from zero at Seeker. Your GitHub token stays connected.</p>
+    <button class="btn btn-ghost mb-2" style="border-color:var(--accent-l);color:var(--accent-l)" onclick="resetAllProgress()">Reset All Progress</button>
   </div>
 </div>
 
@@ -1103,6 +1108,11 @@ async function fetchFromGitHub() {
 }
 
 function mergeState(local, remote) {
+  // A reset starts a new epoch: whichever side reset most recently wins outright,
+  // otherwise stale devices would resurrect old history via the field-wise merge below.
+  const lr = local.resetAt || 0, rr = remote.resetAt || 0;
+  if (lr > rr) return {...local};
+  if (rr > lr) return {...remote};
   // For arrays like masteredCards — union both
   const mergeArr = (a, b) => [...new Set([...(a||[]), ...(b||[])])];
   return {
@@ -1131,6 +1141,54 @@ async function manualSync() {
   await fetchFromGitHub();
   renderDashboard();
   setSyncStatus('ok','Synced ' + new Date().toLocaleTimeString());
+}
+
+
+async function resetAllProgress() {
+  const sure = confirm('Reset ALL progress?\n\nMastered cards, quiz history, quiz counts and spread counts will be wiped on this device and on GitHub. This cannot be undone.');
+  if (!sure) return;
+  STATE = {
+    level: 1,
+    levelSetAt: Date.now(),
+    resetAt: Date.now(),
+    quizSessions: [],
+    masteredCards: [],
+    quizHistory: [],
+    spreadHistory: [],
+    setupSeen: true,
+    currentQuizCards: [],
+    currentQuizQ: 0,
+    currentQuizType: null,
+    currentSpread: null
+  };
+  saveLocalState();
+  const token = getToken();
+  if (token) {
+    // Direct forced write — must NOT go through syncToGitHub, whose conflict
+    // handler merges the remote back in, which is exactly what a reset forbids.
+    setSyncStatus('warn', 'Resetting remote…');
+    try {
+      const head = await fetch(GITHUB.api + '?ref=' + GITHUB.branch, { headers: { Authorization: `token ${token}` } });
+      if (head.ok) lastSyncedSha = (await head.json()).sha;
+      const payload = btoa(unescape(encodeURIComponent(JSON.stringify(STATE))));
+      const body = { message: 'progress reset', content: payload, branch: GITHUB.branch };
+      if (lastSyncedSha) body.sha = lastSyncedSha;
+      const res = await fetch(GITHUB.api, {
+        method: 'PUT',
+        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error((await res.json()).message || res.status);
+      lastSyncedSha = (await res.json()).content?.sha;
+      setSyncStatus('ok', 'Progress reset everywhere');
+    } catch (e) {
+      setSyncStatus('err', 'Remote reset failed — local is clean, retry when online');
+      console.warn('Reset sync error:', e);
+    }
+  }
+  renderDashboard();
+  showScreen('screen-dashboard');
+  showToast('A clean deck. Welcome back to Seeker.');
 }
 
 function saveGithubToken() {
@@ -1245,8 +1303,8 @@ function renderDashboard() {
       setSyncStatus('ok', 'Connected to GitHub');
     } else {
       setSyncStatus('warn', 'Local only — tap to connect');
-      syncBar.querySelector('button').onclick = () => showScreen('screen-setup');
     }
+    syncBar.querySelector('button').onclick = () => showScreen('screen-setup');
   }
 
   const levelBtns = LEVELS.map(l => `
